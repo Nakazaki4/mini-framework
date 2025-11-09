@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mini-FromWork</title>
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+    <app-root ng-version="17.0.5">
+        <section class="todoapp">
+            <app-todo-header>
+                <header class="header">
+                    <h1>Todos</h1>
+                    <input autofocus="" placeholder="What needs to be done?"
+                        class="new-todo ng-pristine ng-valid ng-touched">
+                </header>
+            </app-todo-header>
+            <app-todo-list></app-todo-list>
+            <app-todo-footer></app-todo-footer>
+        </section>
+    </app-root>
+    <footer class="info">
+        <p>Double-click to edit a todo</p>
+        <p>Created by the TodoMVC Team</p>
+        <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+    </footer>
+
+</body>
+<script src="./todo.js"></script>
+
+</html>
