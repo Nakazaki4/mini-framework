@@ -1,30 +1,39 @@
-import { observable } from "./observable.js"
+import { effect, signal } from "./signals.js"
 
-const button = document.getElementById('btn')
-let count = observable(0)
+class state {
+    data = null
 
-count.subscribe((value) => { button.textContent = value })
-function conditional() {
-    count.subscribe((value) => {
-        if (value % 3 == 0) {
-            value = value + 10
-            button.textContent = value
+    get value() {
+        return v
+    }
+    set value(newValue) {
+        v = newValue
+        subscriptions.forEach((fn) => fn(newValue))
+    }
+    register(subscriber) {
+        subscriptions.add(subscriber)
+    }
+
+}
+
+
+const div = (attributes) => {
+    const elm = document.createElement("div");
+    Object.entries(attributes).forEach(([k, v]) => {
+        if (v instanceof state) {
+            elm.textContent = v.value
         }
+        elm.setAttribute(k, v)
     })
+
+    return elm;
 }
 
-button.addEventListener('click', () => {
-    count.unsubscribe(conditional)
-    count.increment()
-})
-
-const title = document.getElementById('title')
-let text = observable('Abdnour')
-
-text.subscribe(modify)
-function modify() {
-    title.textContent = random
+const App = () => {
+    const btn = document.getElementById('btn')
+    let count = new state(0);
+    btn.addEventListener('click', () => count.value++)
+    return div({ textContent: count, className: theme })
 }
-title.addEventListener('selectionchange', ()=>{
-    text.
-})
+
+document.getElementById("app").append(App())

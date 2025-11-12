@@ -31,3 +31,7 @@ body {
   transform: translateY(1px);
   box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
 }
+
+#title {
+  font-size: 100px;
+}
