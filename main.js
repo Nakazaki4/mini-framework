@@ -1,39 +1,34 @@
-import { effect, signal } from "./signals.js"
+import { State } from "./state.js"
 
-class state {
-    data = null
-
-    get value() {
-        return v
-    }
-    set value(newValue) {
-        v = newValue
-        subscriptions.forEach((fn) => fn(newValue))
-    }
-    register(subscriber) {
-        subscriptions.add(subscriber)
-    }
-
-}
-
-
-const div = (attributes) => {
-    const elm = document.createElement("div");
-    Object.entries(attributes).forEach(([k, v]) => {
-        if (v instanceof state) {
-            elm.textContent = v.value
-        }
-        elm.setAttribute(k, v)
-    })
-
-    return elm;
-}
-
-const App = () => {
-    const btn = document.getElementById('btn')
-    let count = new state(0);
+function App() {
+    const btn = document.getElementById("btn")
+    const count = new State(0)
     btn.addEventListener('click', () => count.value++)
-    return div({ textContent: count, className: theme })
+
+    const component = {
+        tag: "div",
+        className: "main-div",
+        textContent: count
+    }
+    return createElement(component)
 }
 
-document.getElementById("app").append(App())
+function createElement(component) {
+    let el = null
+    Object.entries(component).forEach(([k, v]) => {
+        if (k == "tag") {
+            el = document.createElement(v)
+        }
+        else if (v instanceof State) {
+            v.subscribe(() => {
+                el.textContent = v.value
+            })
+        }
+        else {
+            el.setAttribute(k, v)
+        }
+    })
+    return el
+}
+
+document.getElementById("app").append(App());
