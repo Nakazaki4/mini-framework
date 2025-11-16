@@ -8,7 +8,7 @@ function App() {
     const todos = signal([])
 
     const addTaskEvent = (inputEl) => {
-        const text = inputEl.value.trim();        
+        const text = inputEl.value.trim();
         addTask(text)
         inputEl.value = ""
     }
@@ -35,7 +35,7 @@ function App() {
             (e, index) => { toggleTask(index) },
             (e, index) => { deleteTask(index) }
         )
-        todos.set([...todos(), newTask])
+        todos.set(newTask)
     }
 
     function toggleTask(index) {

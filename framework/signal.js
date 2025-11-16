@@ -10,8 +10,6 @@ export function signal(initialValue) {
 
     read.set = (newValue) => {
         value = newValue
-        console.log(value);
-        
         subscribers.forEach((subscriber) => { subscriber() })
     }
 

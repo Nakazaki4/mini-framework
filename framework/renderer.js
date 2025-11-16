@@ -16,13 +16,9 @@ export function render(component) {
         }
     }
 
-    console.log(typeof component.children);
-
-
-    for (const child of component.children) {
-        console.log(child);
-
+    for (const child of component.children || []) {
         el.appendChild(render(child))
     }
+
     return el
 }

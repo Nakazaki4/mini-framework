@@ -1,5 +1,4 @@
 export function createTask(text, toggleFn, deleteFn) {
-
     return {
         tag: "li",
         props: {
@@ -18,7 +17,8 @@ export function createTask(text, toggleFn, deleteFn) {
                             type: "checkbox",
                             class: "toggle",
                             onClick: toggleFn
-                        }
+                        },
+
                     },
                     {
                         tag: "label",
