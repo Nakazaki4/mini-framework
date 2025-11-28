@@ -1,24 +1,16 @@
-export function render(component) {
-    if (typeof component == "string") {
-        return document.createTextNode(component);
+export function createElement(vnode) {
+    if (typeof vnode === 'function') {
+        const textNode = document.createTextNode(vnode);
+        effect(()=>{
+            textNode.textContent = vnode()
+        })
+        return textNode
     }
-
-    const el = document.createElement(component.tag)
-
-    for (const [key, value] of Object.entries(component.props || {})) {
-        if (key.startsWith('on') && typeof value == 'function') {
-            const event = key.slice(2).toLowerCase()
-            el.addEventListener(event, value)
-        } else if (typeof value === "boolean") {
-            el[key] = value
-        } else {
-            el.setAttribute(key, value)
-        }
-    }
-
-    for (const child of component.children || []) {
-        el.appendChild(render(child))
-    }
-
-    return el
 }
+
+function setAttribute(el, key, value) {
+    
+}
+
+
+// h('p', {}, () => `Hello ${name()}`)
