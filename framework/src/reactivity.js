@@ -20,7 +20,7 @@ export function signal(initialValue) {
 
   sig.set = (newValue) => {
     value = newValue;
-    subscribers.forEach(sub => schedule(sub, false));
+    subscribers.forEach(subscriber => schedule(subscriber, false));
   };
 
   return sig;
@@ -105,7 +105,6 @@ function schedule(fn, frame = false) {
   }
 }
 
-// Auto-batch RAF
 const originalRAF = window.requestAnimationFrame;
 window.requestAnimationFrame = function (callback) {
   return originalRAF.call(window, (timestamp) => {
@@ -113,7 +112,6 @@ window.requestAnimationFrame = function (callback) {
   });
 };
 
-// Auto-batch events (optional - user calls once)
 export function autoBatchEvents() {
   const originalAddEventListener = EventTarget.prototype.addEventListener;
 
