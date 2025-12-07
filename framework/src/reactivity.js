@@ -8,10 +8,10 @@ export function signal(initialValue) {
     if (activeEffect) {
       if (activeEffect.wrappedObserver) {
         subscribers.add(activeEffect.wrappedObserver);
-        activeEffect.deps.add(sig);
       } else {
         subscribers.add(activeEffect);
       }
+      activeEffect.deps.add(sig);
     }
     return value;
   }
@@ -28,9 +28,17 @@ export function signal(initialValue) {
 
 
 export function effect(fn) {
-  activeEffect = fn
+  const wrapper = () => fn()
+  wrapper.deps = new Set()
   fn()
+  activeEffect = wrapper
   activeEffect = null
+  return () => {
+    for (const sig of wrapper.deps) {
+      sig.subscribers.delete()
+    }
+    wrapper.deps.clear()
+  }
 }
 
 function cleanup(observer) {
@@ -40,7 +48,7 @@ function cleanup(observer) {
   observer.deps.clear()
 }
 
-function computed(fn) {
+export function computed(fn) {
   let cachedValue;
   let outdated = true;
 

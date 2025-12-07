@@ -1,3 +1,4 @@
+import { bind } from "./events"
 import { effect } from "./reactivity"
 
 export function el(tag, attributes, ...children) {
@@ -10,12 +11,29 @@ export function el(tag, attributes, ...children) {
     )
 }
 
-export function mount(parent, vnode) {
-    const domElement = createElement(vnode)
-    parent.appendChild(domElement)
+export function enableAutoCleanup() {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.removedNodes.forEach((node) => {
+                unmount(node)
+            })
+        })
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
 }
 
-function createElement(vnode) {
+function unmount(node) {
+    if (node._cleanups) {
+        node._cleanups.forEach(cleanupFn => { cleanupFn() })
+        node._cleanups = []
+    }
+
+    if (node.childNodes) {
+        node.childNodes.forEach(child => unmount(child))
+    }
+}
+
+export function createElement(vnode) {
     if (typeof vnode === 'string' || typeof vnode === 'number') {
         return document.createTextNode(String(vnode))
     }
@@ -39,17 +57,18 @@ function createElement(vnode) {
     }
 
     const el = document.createElement(vnode.tag)
+    el._cleanups = []
 
     // attributes
     Object.entries(vnode.attrs).forEach(([key, value]) => {
         if (key.startsWith('on:')) {
             const event = key.slice(3)
-            el.addEventListener(event, value)
+            el._cleanups.push(bind(el, event, value))
             return
         }
 
         if (typeof value === 'function') {
-            effect(() => {
+            const cleanupFn = effect(() => {
                 const actualValue = value()
                 if (key === 'className') {
                     el.setAttribute(key, actualValue)
@@ -59,6 +78,7 @@ function createElement(vnode) {
                     el[key] = actualValue
                 }
             })
+            el._cleanups.push(cleanupFn)
             return
         }
 
@@ -76,7 +96,12 @@ function createElement(vnode) {
     // children
     vnode.children.forEach(child => {
         const childEl = createElement(child)
-        if (childEl) el.appendChild(childEl)
+        if (childEl) mount(el, childEl)
     })
     return el
+}
+
+function mount(parent, vnode) {
+    const domElement = createElement(vnode)
+    parent.appendChild(domElement)
 }
