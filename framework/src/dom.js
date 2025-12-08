@@ -1,4 +1,4 @@
-import { bind } from "./events"
+import { delegate } from "./events"
 import { effect } from "./reactivity"
 
 export function el(tag, attributes, ...children) {
@@ -27,10 +27,6 @@ function unmount(node) {
         node._cleanups.forEach(cleanupFn => { cleanupFn() })
         node._cleanups = []
     }
-
-    if (node.childNodes) {
-        node.childNodes.forEach(child => unmount(child))
-    }
 }
 
 export function createElement(vnode) {
@@ -44,10 +40,11 @@ export function createElement(vnode) {
 
     if (typeof vnode == 'function') {
         const textEl = document.createTextNode('')
-        effect(() => {
+        const cleanupFn = effect(() => {
             const value = vnode()
             textEl.textContent = value == null ? '' : String(value)
         })
+        el._cleanups.push(cleanupFn)
         return textEl
     }
 
@@ -63,7 +60,9 @@ export function createElement(vnode) {
     Object.entries(vnode.attrs).forEach(([key, value]) => {
         if (key.startsWith('on:')) {
             const event = key.slice(3)
-            el._cleanups.push(bind(el, event, value))
+            const parentEl = el.parentNode || document
+            const cleanupFn = delegate(parentEl, vnode.tag, event, value)
+            el._cleanups.push(cleanupFn)
             return
         }
 

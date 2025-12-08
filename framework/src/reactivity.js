@@ -26,16 +26,16 @@ export function signal(initialValue) {
   return sig;
 }
 
-
 export function effect(fn) {
   const wrapper = () => fn()
   wrapper.deps = new Set()
-  fn()
   activeEffect = wrapper
+  fn()
   activeEffect = null
   return () => {
+    // iterates over the signals and deletes subscription
     for (const sig of wrapper.deps) {
-      sig.subscribers.delete()
+      sig.subscribers.delete(wrapper)
     }
     wrapper.deps.clear()
   }
