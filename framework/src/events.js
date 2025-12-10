@@ -14,7 +14,7 @@ export function delegate(parent, selector, type, handler) { //type: type of even
             const handlers = delegations.get(parent)?.[type]
             if (!handlers) return
 
-            
+
             for (const { selector, handler } of handlers) {
                 const target = event.target.closest(selector)
                 if (target && parent.contains(target)) {
@@ -24,8 +24,6 @@ export function delegate(parent, selector, type, handler) { //type: type of even
         })
     }
 
-    // if we already have an event a rule will be added 
-    // which means the parent will hold one listener of its type (e.g: click) on each item
     const rule = { selector, handler }
     eventsForParent[type].push(rule)
 
@@ -35,7 +33,3 @@ export function delegate(parent, selector, type, handler) { //type: type of even
         if (idx !== -1) list.splice(idx, 1)
     }
 }
-
-// - eventStream(element, type)                // Signal-based events
-// - shortcut(keys, handler)                   // Keyboard shortcuts
-// - eventBus                                  // Global event system
