@@ -28,7 +28,7 @@ function unmount(node) {
         node._cleanups = []
     }
 
-    
+
 }
 
 export function createElement(vnode) {

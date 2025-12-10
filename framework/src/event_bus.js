@@ -1,42 +1,47 @@
+import { effect, signal } from "./reactivity";
+
 class EventBus {
     constructor() {
         this.events = new Map();
         this.elementListeners = new WeakMap();
     }
 
-    on(eventName, handler, el = null) {
-        if (!this.events.has(eventName)) {
-            this.events.set(eventName, new Set())
+    getSignal(eventName) {
+        if (!this.events.get(eventName)) {
+            this.events.set(eventName, signal(undefined))
         }
-        this.events.get(eventName).add(handler)
+        return this.events.get(eventName)
+    }
+
+    on(eventName, handler, el = null) {
+        const sig = this.getSignal(eventName)
+
+        const cleanupFn = effect(() => {
+            const value = sig()
+            if (value !== undefined) handler()
+        })
 
         if (el) {
-            if (!this.elementListeners.has(element)) {
-                this.elementListeners.set(element, [])
+            if (!this.elementListeners.has(el)) {
+                this.elementListeners.set(el, [])
             }
-            this.elementListeners.get(element).push({ eventName, handler })
+            this.elementListeners.get(el).push(cleanupFn)
         }
 
-        return () => {
-            this.elementListeners.get(element).delete(handler)
-        }
+        return cleanupFn
     }
 
     emit(eventName, data) {
-        const handlers = this.events.get(eventName)
-        if (handlers) {
-            handlers.forEach(fn, () => { fn(data) })
-        }
+        const sig = this.getSignal(eventName).set(data)
     }
 
-    cleanUp(element) {
-        const listeners = this.elementListeners.get(element)
-        if (listeners) {
-            listeners.forEach({ eventName, handler }, () => {
-                this.events.get(eventName).delete(handler)
-            })
-            this.elementListeners.delete(element)
-        }
+    cleanUp(el) {
+        const listeners = this.elementListeners.get(el)
+        if (!listeners) return
+
+        listeners.forEach(cleanupFn, () => { cleanupFn })
+        this.elementListeners.delete(el)
     }
 }
+
 export const eventBus = new EventBus()
