@@ -4,7 +4,8 @@ export function delegate(parent, selector, type, handler) { //type: type of even
     let eventsForParent = delegations.get(parent)
 
     if (!eventsForParent) {
-        delegations.set(parent, {})
+        eventsForParent = {}
+        delegations.set(parent, eventsForParent)
     }
 
     if (!eventsForParent[type]) {
@@ -29,7 +30,7 @@ export function delegate(parent, selector, type, handler) { //type: type of even
 
     return () => {
         const list = eventsForParent[type]
-        const idx = list.indexof(rule)
+        const idx = list.indexOf(rule)
         if (idx !== -1) list.splice(idx, 1)
     }
 }

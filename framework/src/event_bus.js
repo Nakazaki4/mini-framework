@@ -1,4 +1,4 @@
-import { effect, signal } from "./reactivity";
+import { effect, signal } from "./reactivity.js";
 
 class EventBus {
     constructor() {
@@ -32,14 +32,14 @@ class EventBus {
     }
 
     emit(eventName, data) {
-        const sig = this.getSignal(eventName).set(data)
+        this.getSignal(eventName).set(data)
     }
 
     cleanUp(el) {
         const listeners = this.elementListeners.get(el)
         if (!listeners) return
 
-        listeners.forEach(cleanupFn, () => { cleanupFn })
+        listeners.forEach(cleanupFn => cleanupFn())
         this.elementListeners.delete(el)
     }
 }
