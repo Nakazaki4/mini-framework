@@ -83,7 +83,7 @@ export function createElement(vnode) {
             } else if (key in el) {
                 el[key] = value
             } else {
-                el.setAttribute(key, val)
+                el.setAttribute(key, value)
             }
         })
     }

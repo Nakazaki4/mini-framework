@@ -9,46 +9,7 @@
 </head>
 
 <body id="app">
+    <script type="module" src="./todo.js"></script>
 </body>
-<script type="module">
-    import { router } from '../framework/src/router.js'
-    import { el, createElement } from '../framework/src/dom.js'
-    import { signal } from '../framework/src/reactivity.js'
-
-    // Component for the game page
-    function GamePage(params) {
-        const score = signal(0)
-
-        return el('div', { className: 'game-page' },
-            el('h1', { textContent: 'Game Page' }),
-            el('p', {}, 'Score: ', () => score()),
-            el('button', {
-                'on:click': () => score.set(score() + 1),
-                textContent: 'Increase Score'
-            })
-        )
-
-    }
-
-    function ProfilePage(params) {
-        return el('div', { className: 'profile-page' },
-            el('h1', { textContent: 'Profile Page' }),
-            el('p', { textContent: 'Welcome to your profile!' })
-        )
-    }
-
-    function homePage(params) {
-        return el('div', { className: 'container' },
-            el('button', {
-                'on:click': () => router.navigate('/game'),
-                textContent: 'go to game'
-            }))
-    }
-
-    router.addRoute('/home', homePage)
-    router.addRoute('/game', GamePage)
-    router.addRoute('/profile', ProfilePage)
-    router.initRouter(document.getElementById('app'))
-</script>
 
 </html>

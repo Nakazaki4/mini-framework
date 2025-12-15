@@ -14,7 +14,7 @@ class EventBus {
     }
 
     on(eventName, handler, el = null) {
-        const sig = this.getSignal(eventName)
+        const [sig, setSig] = this.getSignal(eventName)
 
         const cleanupFn = effect(() => {
             const value = sig()
@@ -32,7 +32,8 @@ class EventBus {
     }
 
     emit(eventName, data) {
-        this.getSignal(eventName).set(data)
+        const [sig, setSig] = this.getSignal(eventName)
+        setSig(data)
     }
 
     cleanUp(el) {

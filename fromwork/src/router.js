@@ -2,16 +2,17 @@ import { signal, effect } from './reactivity.js'
 import { createElement } from './dom.js'
 
 class Router {
-    #params = {}
     constructor() {
         this.root = null
         this.routes = new Map()
-        this.currentRoute = signal(this.getCurrentPath())
+        const [currentPath, setCurrentPath] = signal(this.getCurrentPath())
+        this.currentRoute = currentPath
+        this.setCurrentRoute = setCurrentPath
         this.currentDOM = null
         this.isInit = false
 
         window.addEventListener('hashchange', () => {
-            this.currentRoute.set(this.getCurrentPath())
+            this.setCurrentRoute(this.getCurrentPath())
         })
     }
 
@@ -36,7 +37,7 @@ class Router {
         return this
     }
 
-    addRoute(path, handler, params = null) {
+    addRoute(path, handler) {
         this.routes.set(path, handler)
         return this
     }

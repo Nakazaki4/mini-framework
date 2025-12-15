@@ -4,26 +4,26 @@ export function signal(initialValue) {
   let value = initialValue;
   const subscribers = new Set();
 
-  function sig() {
+  function read() {
     if (activeEffect) {
       if (activeEffect.wrappedObserver) {
         subscribers.add(activeEffect.wrappedObserver);
       } else {
         subscribers.add(activeEffect);
       }
-      activeEffect.deps.add(sig);
+      activeEffect.deps.add(read);
     }
     return value;
   }
 
-  sig.subscribers = subscribers;
-
-  sig.set = (newValue) => {
+  function write(newValue) {
     value = newValue;
     subscribers.forEach(subscriber => schedule(subscriber, false));
-  };
+  }
 
-  return sig;
+  read.subscribers = subscribers;
+
+  return [read, write];
 }
 
 export function effect(fn) {
