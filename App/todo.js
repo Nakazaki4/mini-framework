@@ -3,14 +3,13 @@ import { footerPart, sectionPart } from "./components/app.js"
 import { router } from '../fromwork/src/router.js'
 
 function App() {
-    router.initRouter(document.body)
     console.log(window.location.pathname);
-    
+
     router.addRoute('/', () => {
         console.log('hello');
 
-        return el('div', {}, sectionPart(), footerPart())
-    })
+        return [sectionPart(), footerPart()]
+    }).initRouter(document.body)
 }
 
 document.addEventListener('DOMContentLoaded', App())

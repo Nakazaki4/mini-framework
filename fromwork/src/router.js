@@ -52,7 +52,11 @@ class Router {
         const callback = this.routes.get(path)
 
         if (this.currentDOM) {
-            this.currentDOM.remove()
+            if (Array.isArray(this.currentDOM)) {
+                this.currentDOM.forEach(dom => dom.remove())
+            } else {
+                this.currentDOM.remove()
+            }
             this.currentDOM = null
         }
 
@@ -67,9 +71,20 @@ class Router {
             return
         }
 
-        const dom = createElement(callback())
-        this.root.appendChild(dom)
-        this.currentDOM = dom
+        const result = callback()
+
+        if (Array.isArray(result)) {
+            const doms = result.map(vnode => {
+                const dom = createElement(vnode)
+                this.root.appendChild(dom)
+                return dom
+            })
+            this.currentDOM = doms
+        } else {
+            const dom = createElement(result)
+            this.root.appendChild(dom)
+            this.currentDOM = dom
+        }
     }
 }
 

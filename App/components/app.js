@@ -15,7 +15,7 @@ export function footerPart() {
         el('p', {}, "Double-click to edit a todo"),
         el('p', {}, "Created by the TodoMVC Team"),
         el('p', {}, el('a', { href: 'https://todomvc.com/' },
-            "TodoMVC"),
+            "TodoMVC "),
             "Part of ")
     )
 }
@@ -33,11 +33,11 @@ function footer() {
             }, 'All')),
             el('li', {}, el('a', {
                 href: '#/active',
-                className
+                className:""
             }, 'Active')),
             el('li', {}, el('a', {
                 href: '#/completed',
-                className
+                className: ""
             }, 'Completed'))
         ),
         el('button', {

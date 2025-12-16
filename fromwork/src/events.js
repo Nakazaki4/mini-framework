@@ -15,7 +15,6 @@ export function delegate(parent, selector, type, handler) { //type: type of even
             const handlers = delegations.get(parent)?.[type]
             if (!handlers) return
 
-
             for (const { selector, handler } of handlers) {
                 const target = event.target.closest(selector)
                 if (target && parent.contains(target)) {
