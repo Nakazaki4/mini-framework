@@ -31,11 +31,13 @@ body {
 }
 
 .header h1 {
-  background-color: rgb(146, 196, 183);
+  background-color: #551D8B;
   color: black;
   padding: 30px;
   font-size: 60px;
-  color: rgba(175, 47, 47, 0.15);
+  color: white;
+  text-transform: uppercase;
+
 }
 
 .new-todo {
@@ -64,7 +66,6 @@ body {
   left: -12px;
   width: 60px;
   height: 34px;
-  transform: rotate(90deg);
 }
 
 .toggle-all + .toggle-all-label {
