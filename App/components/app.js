@@ -1,8 +1,7 @@
 import { el } from "../../fromwork/src/dom.js"
+import { effect, signal } from "../../fromwork/src/reactivity.js"
 import { currentFilter } from '../todo.js' // Import the filter signal
-
-export function appContainer() {
-}
+import { todos, setTodos } from "../todo.js"
 
 export function sectionPart() {
     return el('section', { className: 'todoapp' },
@@ -61,9 +60,9 @@ function main() {
     return el('main', { className: 'main' },
         el('div', { className: 'toggle-all-container' },
             el('input', {
-                className: 'toggle-all',
+                type: 'checkbox',
                 id: 'toggle-all-input',
-                type: 'checkbox'
+                className: 'toggle-all'
             }),
             el('label', {
                 className: 'toggle-all-label',
@@ -71,18 +70,59 @@ function main() {
             })
         ),
         el('ul', { className: 'todo-list' },
-            // TODO: Later, make this list reactive to filter
-            // For now, it's just an empty list
+            ...todos().map(todo => task(todo))
         )
     )
 }
 
 function header() {
-    return el('header', {
-        className: 'header'
-    }, el('a', {
-        className: 'router-link-active router-link-exact-active',
-        href: '#/'
-    }, el('h1', {}, 'todos')
-    ))
+    return el('header', { className: 'header' }, el('a', {
+        ariaCurrent: "page",
+        className: 'router-link-active router-link-exact-active'
+    }, el('h1', {}, 'todos')),
+        el('input', {
+            className: "new-todo",
+            placeholder: "What needs to be done?",
+            'on:keydown': (e) => {
+                if (e.key != 'Enter') return
+
+                const value = e.target.value.trim()
+                if (!value) return
+                e.target.value = ''
+                setTodos(prev => [value, ...prev])
+            }
+        }))
+}
+
+
+
+function task(taskContent) {
+    const [isCompleted, setIsCompleted] = signal(false)
+
+    const toggleStatus = () => {
+        setIsCompleted(!isCompleted())
+    }
+
+    return el('li', { "className": () => isCompleted() ? 'completed' : '' },
+        el('div', { className: 'view' },
+            el('input', {
+                type: 'checkbox',
+                className: 'toggle',
+                'on:click': toggleStatus
+            }),
+            el('label', {}, taskContent),
+            el('button', { className: 'destroy' })
+        ),
+        el('div', { className: 'input-container' },
+            el('input', {
+                id: 'edit-todo-input',
+                type: 'text',
+                className: 'edit'
+            }),
+            el('label', {
+                className: 'visually-hidden',
+                for: 'edit-todo-input'
+            }, 'Edit Todo Input')
+        )
+    )
 }

@@ -1,10 +1,10 @@
-import { el } from "../fromwork/src/dom.js"
 import { footerPart, sectionPart } from "./components/app.js"
 import { router } from '../fromwork/src/router.js'
 import { signal } from '../fromwork/src/reactivity.js'
 
 // Create shared filter state that persists across route changes
 export const [currentFilter, setCurrentFilter] = signal('all')
+export const [todos, setTodos] = signal([])
 
 function App() {
     router
@@ -12,19 +12,19 @@ function App() {
             console.log('Route: All todos')
             setCurrentFilter('all')
             return [sectionPart(), footerPart()]
-        }, 'todo-app') // ← Group name
+        }, 'todo-app')
 
         .addRoute('/active', () => {
             console.log('Route: Active todos')
             setCurrentFilter('active')
             return [sectionPart(), footerPart()]
-        }, 'todo-app') // ← Same group
+        }, 'todo-app')
 
         .addRoute('/completed', () => {
             console.log('Route: Completed todos')
             setCurrentFilter('completed')
             return [sectionPart(), footerPart()]
-        }, 'todo-app') // ← Same group
+        }, 'todo-app')
 
         .initRouter(document.body)
 }

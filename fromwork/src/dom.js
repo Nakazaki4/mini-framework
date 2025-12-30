@@ -49,15 +49,14 @@ export function createElement(vnode) {
 
     const el = document.createElement(vnode.tag)
     el._cleanups = []
+    el._pendingEvents = []
 
     // attributes
     if (vnode.attrs) {
         Object.entries(vnode.attrs).forEach(([key, value]) => {
             if (key.startsWith('on:')) {
                 const event = key.slice(3)
-                const parentEl = el.parentNode || document.body
-                const cleanupFn = delegate(parentEl, vnode.tag, event, value)
-                el._cleanups.push(cleanupFn)
+                el._pendingEvents.push({ event, handler: value, selector: vnode.tag })
                 return
             }
 
@@ -65,7 +64,7 @@ export function createElement(vnode) {
                 const cleanupFn = effect(() => {
                     const actualValue = value()
                     if (key === 'className') {
-                        el.setAttribute(key, actualValue)
+                        el.className = actualValue
                     } else if (key === 'style' && typeof actualValue === 'object') {
                         Object.assign(el.style, actualValue)
                     } else {
@@ -99,8 +98,22 @@ export function createElement(vnode) {
 }
 
 function mount(parent, vnode) {
+    console.log("PARENT", parent)
+    console.log("CHILD", vnode);
+
     const domElement = createElement(vnode)
     parent.appendChild(domElement)
+
+    if (domElement._pendingEvents && domElement._pendingEvents.length > 0) {
+        domElement._pendingEvents.forEach(({ event, handler, selector }) => {
+            const delegateParent = domElement.parentNode
+            if (delegateParent) {
+                const cleanupFn = delegate(delegateParent, selector, event, handler)
+                domElement._cleanups.push(cleanupFn)
+            }
+        })
+        domElement._pendingEvents = []
+    }
 }
 
 function unmount(node) {

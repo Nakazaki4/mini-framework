@@ -17,7 +17,11 @@ export function signal(initialValue) {
   }
 
   function write(newValue) {
-    value = newValue;
+    if (typeof newValue === 'function') {
+      value = newValue(value)
+    } else {
+      value = newValue;
+    }
     subscribers.forEach(subscriber => schedule(subscriber, false));
   }
 
