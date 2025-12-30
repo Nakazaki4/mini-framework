@@ -1,4 +1,5 @@
 import { el } from "../../fromwork/src/dom.js";
+import { router } from "../../fromwork/src/router.js";
 
 export function appContainer() {
 }
@@ -29,15 +30,15 @@ function footer() {
         el('ul', { className: 'filters' },
             el('li', {}, el('a', {
                 href: '#/',
-                className: 'router-link-active router-link-exact-active selected'
+                className: () => router.isActive('/') ? 'router-link-active router-link-exact-active selected' : ''
             }, 'All')),
             el('li', {}, el('a', {
                 href: '#/active',
-                className:""
+                className: () => router.isActive('/active') ? 'router-link-active router-link-exact-active selected' : ''
             }, 'Active')),
             el('li', {}, el('a', {
                 href: '#/completed',
-                className: ""
+                className: () => router.isActive('/completed') ? 'router-link-active router-link-exact-active selected' : ''
             }, 'Completed'))
         ),
         el('button', {
