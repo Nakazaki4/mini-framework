@@ -1,4 +1,5 @@
-import { el } from "../../fromwork/src/dom.js";
+import { el } from "../../fromwork/src/dom.js"
+import { currentFilter } from '../todo.js' // Import the filter signal
 
 export function appContainer() {
 }
@@ -27,17 +28,26 @@ function footer() {
             " items left "
         ),
         el('ul', { className: 'filters' },
+            // Make className reactive based on currentFilter signal
             el('li', {}, el('a', {
                 href: '#/',
-                className: 'router-link-active router-link-exact-active selected'
+                className: () => currentFilter() === 'all'
+                    ? 'router-link-active router-link-exact-active selected'
+                    : ''
             }, 'All')),
+
             el('li', {}, el('a', {
                 href: '#/active',
-                className:""
+                className: () => currentFilter() === 'active'
+                    ? 'router-link-active router-link-exact-active selected'
+                    : ''
             }, 'Active')),
+
             el('li', {}, el('a', {
                 href: '#/completed',
-                className: ""
+                className: () => currentFilter() === 'completed'
+                    ? 'router-link-active router-link-exact-active selected'
+                    : ''
             }, 'Completed'))
         ),
         el('button', {
@@ -60,7 +70,10 @@ function main() {
                 for: 'toggle-all-input'
             })
         ),
-        el('ul', { className: 'todo-list' })
+        el('ul', { className: 'todo-list' },
+            // TODO: Later, make this list reactive to filter
+            // For now, it's just an empty list
+        )
     )
 }
 
