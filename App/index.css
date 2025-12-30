@@ -26,15 +26,16 @@ body {
 
 /* --- HEADER --- */
 .header {
-  padding: 20px;
   text-align: center;
+  height: 145px;
 }
 
 .header h1 {
-  font-size: 80px;
-  font-weight: 100;
+  background-color: rgb(146, 196, 183);
+  color: black;
+  padding: 30px;
+  font-size: 60px;
   color: rgba(175, 47, 47, 0.15);
-  margin: -20px 0 20px 0;
 }
 
 .new-todo {

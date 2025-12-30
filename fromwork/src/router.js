@@ -1,24 +1,54 @@
-import { signal, effect } from './reactivity.js'
+import { signal, effect, computed } from './reactivity.js'
 import { createElement } from './dom.js'
 
 class Router {
     constructor() {
         this.root = null
         this.routes = new Map()
+        
+        // Reactive current path 
         const [currentPath, setCurrentPath] = signal(this.getCurrentPath())
         this.currentRoute = currentPath
         this.setCurrentRoute = setCurrentPath
+        
+        // Reactive query parameters 
+        const [queryParams, setQueryParams] = signal(this.getQueryParams())
+        this.queryParams = queryParams
+        this.setQueryParams = setQueryParams
+        
+        
         this.currentDOM = null
         this.isInit = false
 
         window.addEventListener('hashchange', () => {
             this.setCurrentRoute(this.getCurrentPath())
+            this.setQueryParams(this.getQueryParams())
+        })
+
+        window.addEventListener('popstate', () => {
+            this.setCurrentRoute(this.getCurrentPath())
+            this.setQueryParams(this.getQueryParams())
         })
     }
 
     getCurrentPath() {
         const hash = window.location.hash.slice(1)
-        return hash || '/'
+        const [path] = hash.split('?')
+        return path || '/'
+    }
+
+    getQueryParams() {
+        const hash = window.location.hash.slice(1)
+        const [, queryString] = hash.split('?')
+        
+        if (!queryString) return {}
+        
+        const params = {}
+        const searchParams = new URLSearchParams(queryString)
+        for (const [key, value] of searchParams) {
+            params[key] = value
+        }
+        return params
     }
 
     initRouter(rootElement) {
@@ -30,6 +60,7 @@ class Router {
         this.root = rootElement
         this.isInit = true
 
+        // Automatically re-render when route state changes
         effect(() => {
             this._render()
         })
@@ -71,6 +102,7 @@ class Router {
             return
         }
 
+        // Execute route handler and render result
         const result = callback()
 
         if (Array.isArray(result)) {
