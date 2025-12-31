@@ -32,10 +32,12 @@ export function createElement(vnode) {
     }
 
     if (typeof vnode == 'function') {
+        console.log(typeof vnode)
         const textEl = document.createTextNode('')
         textEl._cleanups = []
         const cleanupFn = effect(() => {
             const value = vnode()
+            console.log(value)
             textEl.textContent = value == null ? '' : String(value)
         })
         textEl._cleanups.push(cleanupFn)
@@ -98,11 +100,12 @@ export function createElement(vnode) {
 }
 
 function mount(parent, vnode) {
-    console.log("PARENT", parent)
-    console.log("CHILD", vnode);
+    // console.log("PARENT", parent)
+    // console.log("CHILD", vnode);
 
     const domElement = createElement(vnode)
     parent.appendChild(domElement)
+
 
     if (domElement._pendingEvents && domElement._pendingEvents.length > 0) {
         domElement._pendingEvents.forEach(({ event, handler, selector }) => {

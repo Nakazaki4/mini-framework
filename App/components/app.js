@@ -70,7 +70,7 @@ function main() {
             })
         ),
         el('ul', { className: 'todo-list' },
-            ...todos().map(todo => task(todo))
+            () => todos().map(todo => task(todo))
         )
     )
 }
