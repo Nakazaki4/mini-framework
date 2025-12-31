@@ -22,6 +22,8 @@ export function enableAutoCleanup() {
     observer.observe(document.body, { childList: true, subtree: true })
 }
 
+const elementsByKey = new Map()
+
 export function createElement(vnode) {
     if (typeof vnode === 'string' || typeof vnode === 'number') {
         return document.createTextNode(String(vnode))
@@ -93,24 +95,19 @@ export function createElement(vnode) {
         vnode.children?.forEach(child => {
             if (child) {
                 if (typeof child === 'function') {
-                    let currentElements = []
-
+                    const elementsByKey = new Map()
                     const cleanupFn = effect(() => {
-                        currentElements.forEach(el => {
-                            unmount(el)
-                            el.remove()
+                        const value = child()
+
+                        if (!Array.isArray(value)) return
+                        // if ()
+
+                        
+                        value.forEach((obj, idx) => {
+                            elementsByKey.set(idx, obj)
+                            const newEl = createElement(obj)
+                            el.appendChild(newEl)
                         })
-                        currentElements = []
-
-                        const newVnodes = child()
-
-                        if (Array.isArray(newVnodes)) {
-                            newVnodes.forEach(vnode => {
-                                const childEl = createElement(vnode)
-                                el.appendChild(childEl)
-                                currentElements.push(childEl)
-                            })
-                        }
                     })
 
                     el._cleanups.push(cleanupFn)

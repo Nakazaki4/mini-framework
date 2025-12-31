@@ -101,7 +101,7 @@ function task(taskContent) {
     }
 
     return el('li', { 
-        className: () => isCompleted() ? 'completed' : '' 
+        "className": () => isCompleted() ? 'completed' : '' 
     },
         el('div', { className: 'view' },
             el('input', {
