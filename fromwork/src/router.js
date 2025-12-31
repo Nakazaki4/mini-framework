@@ -1,4 +1,4 @@
-import { signal, effect } from './reactivity.js'
+import { signal, effect, computed } from './reactivity.js'
 import { createElement } from './dom.js'
 
 class Router {
@@ -17,12 +17,33 @@ class Router {
 
         window.addEventListener('hashchange', () => {
             this.setCurrentRoute(this.getCurrentPath())
+            this.setQueryParams(this.getQueryParams())
+        })
+
+        window.addEventListener('popstate', () => {
+            this.setCurrentRoute(this.getCurrentPath())
+            this.setQueryParams(this.getQueryParams())
         })
     }
 
     getCurrentPath() {
         const hash = window.location.hash.slice(1)
-        return hash || '/'
+        const [path] = hash.split('?')
+        return path || '/'
+    }
+
+    getQueryParams() {
+        const hash = window.location.hash.slice(1)
+        const [, queryString] = hash.split('?')
+        
+        if (!queryString) return {}
+        
+        const params = {}
+        const searchParams = new URLSearchParams(queryString)
+        for (const [key, value] of searchParams) {
+            params[key] = value
+        }
+        return params
     }
 
     initRouter(rootElement) {
@@ -34,6 +55,7 @@ class Router {
         this.root = rootElement
         this.isInit = true
 
+        // Automatically re-render when route state changes
         effect(() => {
             this._render()
         })
@@ -55,9 +77,50 @@ class Router {
         return this
     }
 
-    navigate(path) {
-        if (path === this.currentRoute()) return
-        window.location.hash = path
+
+    navigate(path, query = {}) {
+        // Build URL with query parameters
+        const queryString = this.buildQueryString(query)
+        const fullPath = queryString ? `${path}?${queryString}` : path
+        
+        if (fullPath === window.location.hash.slice(1)) return
+        window.location.hash = fullPath
+    }
+
+
+    setState(newState, merge = true) {
+        const currentQuery = merge ? { ...this.queryParams(), ...newState } : newState
+        const queryString = this.buildQueryString(currentQuery)
+        const path = this.currentRoute()
+        const fullPath = queryString ? `${path}?${queryString}` : path
+        window.location.hash = fullPath
+    }
+
+
+    getState() {
+        return this.queryParams()
+    }
+
+
+    getStateValue(key, defaultValue = null) {
+        return this.queryParams()[key] ?? defaultValue
+    }
+
+    buildQueryString(params) {
+        const filtered = Object.entries(params).filter(([_, value]) => 
+            value !== null && value !== undefined && value !== ''
+        )
+        
+        if (filtered.length === 0) return ''
+        
+        return filtered
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+            .join('&')
+    }
+
+
+    isActive(path) {
+        return this.currentRoute() === path
     }
 
     // NEW: Helper to find which group a path belongs to

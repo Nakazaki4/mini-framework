@@ -26,15 +26,18 @@ body {
 
 /* --- HEADER --- */
 .header {
-  padding: 20px;
   text-align: center;
+  height: 145px;
 }
 
 .header h1 {
-  font-size: 80px;
-  font-weight: 100;
-  color: rgba(175, 47, 47, 0.15);
-  margin: -20px 0 20px 0;
+  background-color: #551D8B;
+  color: black;
+  padding: 30px;
+  font-size: 60px;
+  color: white;
+  text-transform: uppercase;
+
 }
 
 .new-todo {
@@ -63,7 +66,6 @@ body {
   left: -12px;
   width: 60px;
   height: 34px;
-  transform: rotate(90deg);
 }
 
 .toggle-all-label {
