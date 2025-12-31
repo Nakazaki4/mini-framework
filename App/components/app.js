@@ -1,6 +1,6 @@
 import { el } from "../../fromwork/src/dom.js"
-import { effect, signal } from "../../fromwork/src/reactivity.js"
-import { currentFilter } from '../todo.js' // Import the filter signal
+import { signal } from "../../fromwork/src/reactivity.js"
+import { currentFilter } from '../todo.js'
 import { todos, setTodos } from "../todo.js"
 
 export function sectionPart() {
@@ -27,7 +27,6 @@ function footer() {
             " items left "
         ),
         el('ul', { className: 'filters' },
-            // Make className reactive based on currentFilter signal
             el('li', {}, el('a', {
                 href: '#/',
                 className: () => currentFilter() === 'all'
@@ -76,25 +75,23 @@ function main() {
 }
 
 function header() {
-    return el('header', { className: 'header' }, el('a', {
-        ariaCurrent: "page",
-        className: 'router-link-active router-link-exact-active'
-    }, el('h1', {}, 'todos')),
+    return el('header', { className: 'header' },
+        el('h1', {}, 'todos'),
         el('input', {
             className: "new-todo",
             placeholder: "What needs to be done?",
             'on:keydown': (e) => {
-                if (e.key != 'Enter') return
+                if (e.key !== 'Enter') return
 
                 const value = e.target.value.trim()
                 if (!value) return
+                
                 e.target.value = ''
-                setTodos(prev => [value, ...prev])
+                setTodos([...todos(), value])
             }
-        }))
+        })
+    )
 }
-
-
 
 function task(taskContent) {
     const [isCompleted, setIsCompleted] = signal(false)
@@ -103,12 +100,14 @@ function task(taskContent) {
         setIsCompleted(!isCompleted())
     }
 
-    return el('li', { "className": () => isCompleted() ? 'completed' : '' },
+    return el('li', { 
+        className: () => isCompleted() ? 'completed' : '' 
+    },
         el('div', { className: 'view' },
             el('input', {
                 type: 'checkbox',
                 className: 'toggle',
-                'on:click': toggleStatus
+                'on:change': toggleStatus // Use 'change' for checkboxes
             }),
             el('label', {}, taskContent),
             el('button', { className: 'destroy' })

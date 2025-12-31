@@ -72,6 +72,7 @@ class Router {
 
     // MODIFIED: Check route groups before destroying DOM
     _render() {
+        console.log("hello")
         const path = this.currentRoute()
         const callback = this.routes.get(path)
 

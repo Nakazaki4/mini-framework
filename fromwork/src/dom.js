@@ -32,12 +32,10 @@ export function createElement(vnode) {
     }
 
     if (typeof vnode == 'function') {
-        console.log(typeof vnode)
         const textEl = document.createTextNode('')
         textEl._cleanups = []
         const cleanupFn = effect(() => {
             const value = vnode()
-            console.log(value)
             textEl.textContent = value == null ? '' : String(value)
         })
         textEl._cleanups.push(cleanupFn)
@@ -51,14 +49,15 @@ export function createElement(vnode) {
 
     const el = document.createElement(vnode.tag)
     el._cleanups = []
-    el._pendingEvents = []
 
     // attributes
     if (vnode.attrs) {
         Object.entries(vnode.attrs).forEach(([key, value]) => {
             if (key.startsWith('on:')) {
                 const event = key.slice(3)
-                el._pendingEvents.push({ event, handler: value, selector: vnode.tag })
+                const parentEl = el.parentNode || document.body
+                const cleanupFn = delegate(parentEl, vnode.tag, event, value)
+                el._cleanups.push(cleanupFn)
                 return
             }
 
@@ -66,7 +65,7 @@ export function createElement(vnode) {
                 const cleanupFn = effect(() => {
                     const actualValue = value()
                     if (key === 'className') {
-                        el.className = actualValue
+                        el.setAttribute(key, actualValue)
                     } else if (key === 'style' && typeof actualValue === 'object') {
                         Object.assign(el.style, actualValue)
                     } else {
@@ -92,7 +91,33 @@ export function createElement(vnode) {
     // children
     if (Array.isArray(vnode.children)) {
         vnode.children?.forEach(child => {
-            if (child) mount(el, child)
+            if (child) {
+                if (typeof child === 'function') {
+                    let currentElements = []
+
+                    const cleanupFn = effect(() => {
+                        currentElements.forEach(el => {
+                            unmount(el)
+                            el.remove()
+                        })
+                        currentElements = []
+
+                        const newVnodes = child()
+
+                        if (Array.isArray(newVnodes)) {
+                            newVnodes.forEach(vnode => {
+                                const childEl = createElement(vnode)
+                                el.appendChild(childEl)
+                                currentElements.push(childEl)
+                            })
+                        }
+                    })
+
+                    el._cleanups.push(cleanupFn)
+                } else {
+                    mount(el, child)
+                }
+            }
         })
     }
 
@@ -100,23 +125,8 @@ export function createElement(vnode) {
 }
 
 function mount(parent, vnode) {
-    // console.log("PARENT", parent)
-    // console.log("CHILD", vnode);
-
     const domElement = createElement(vnode)
     parent.appendChild(domElement)
-
-
-    if (domElement._pendingEvents && domElement._pendingEvents.length > 0) {
-        domElement._pendingEvents.forEach(({ event, handler, selector }) => {
-            const delegateParent = domElement.parentNode
-            if (delegateParent) {
-                const cleanupFn = delegate(delegateParent, selector, event, handler)
-                domElement._cleanups.push(cleanupFn)
-            }
-        })
-        domElement._pendingEvents = []
-    }
 }
 
 function unmount(node) {
