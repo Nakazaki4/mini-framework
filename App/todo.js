@@ -9,19 +9,16 @@ export const [todos, setTodos] = signal([]) // holds an array of the tasks as te
 function App() {
     router
         .addRoute('/', () => {
-            console.log('Route: All todos')
             setCurrentFilter('all')
             return [sectionPart(), footerPart()]
         }, 'todo-app')
 
         .addRoute('/active', () => {
-            console.log('Route: Active todos')
             setCurrentFilter('active')
             return [sectionPart(), footerPart()]
         }, 'todo-app')
 
         .addRoute('/completed', () => {
-            console.log('Route: Completed todos')
             setCurrentFilter('completed')
             return [sectionPart(), footerPart()]
         }, 'todo-app')

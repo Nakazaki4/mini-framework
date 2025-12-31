@@ -4,14 +4,14 @@ import { currentFilter } from '../todo.js'
 import { todos, setTodos } from "../todo.js"
 
 export function sectionPart() {
-    return el('section', { className: 'todoapp' },
+    return el('section', { "className": 'todoapp' },
         header(),
         main(),
         footer())
 }
 
 export function footerPart() {
-    return el('footer', { className: 'info' },
+    return el('footer', { "className": 'info' },
         el('p', {}, "Double-click to edit a todo"),
         el('p', {}, "Created by the TodoMVC Team"),
         el('p', {}, el('a', { href: 'https://todomvc.com/' },
@@ -21,71 +21,76 @@ export function footerPart() {
 }
 
 function footer() {
-    return el('footer', { className: 'footer' },
-        el('span', { className: 'todo-count' },
+    return el('footer', { "className": 'footer' },
+        el('span', { "className": 'todo-count' },
             el('strong', {}, ''),
             " items left "
         ),
-        el('ul', { className: 'filters' },
+        el('ul', { "className": 'filters' },
             el('li', {}, el('a', {
                 href: '#/',
-                className: () => currentFilter() === 'all'
+                "className": () => currentFilter() === 'all'
                     ? 'router-link-active router-link-exact-active selected'
                     : ''
             }, 'All')),
 
             el('li', {}, el('a', {
                 href: '#/active',
-                className: () => currentFilter() === 'active'
+                "className": () => currentFilter() === 'active'
                     ? 'router-link-active router-link-exact-active selected'
                     : ''
             }, 'Active')),
 
             el('li', {}, el('a', {
                 href: '#/completed',
-                className: () => currentFilter() === 'completed'
+                "className": () => currentFilter() === 'completed'
                     ? 'router-link-active router-link-exact-active selected'
                     : ''
             }, 'Completed'))
         ),
         el('button', {
-            className: 'clear-completed',
+            "className": 'clear-completed',
             style: 'display: none;'
         }, 'Clear completed')
     )
 }
 
 function main() {
-    return el('main', { className: 'main' },
-        el('div', { className: 'toggle-all-container' },
+    return el('main', { "className": 'main' },
+        el('div', { "className": 'toggle-all-container' },
             el('input', {
                 type: 'checkbox',
                 id: 'toggle-all-input',
-                className: 'toggle-all'
+                "className": 'toggle-all'
             }),
             el('label', {
-                className: 'toggle-all-label',
+                "className": 'toggle-all-label',
                 for: 'toggle-all-input'
             })
         ),
-        el('ul', { className: 'todo-list' },
-            () => todos().map(todo => task(todo))
+        el('ul', { "className": 'todo-list' },
+            () => todos().map((todo, idx) => {
+                const vnode = task(todo)
+                vnode.key = idx
+                return vnode
+            }
+            )
         )
     )
 }
 
 function header() {
-    return el('header', { className: 'header' },
+    return el('header', { "className": 'header' },
         el('h1', {}, 'todos'),
         el('input', {
-            className: "new-todo",
+            "className": "new-todo",
             placeholder: "What needs to be done?",
             'on:keydown': (e) => {
                 if (e.key !== 'Enter') return
 
                 const value = e.target.value.trim()
                 if (!value) return
-                
+
                 e.target.value = ''
                 setTodos([...todos(), value])
             }
@@ -100,26 +105,26 @@ function task(taskContent) {
         setIsCompleted(!isCompleted())
     }
 
-    return el('li', { 
-        "className": () => isCompleted() ? 'completed' : '' 
+    return el('li', {
+        "className": () => isCompleted() ? 'completed' : ''
     },
-        el('div', { className: 'view' },
+        el('div', { "className": 'view' },
             el('input', {
                 type: 'checkbox',
-                className: 'toggle',
-                'on:change': toggleStatus // Use 'change' for checkboxes
+                "className": 'toggle',
+                'on:change': toggleStatus
             }),
             el('label', {}, taskContent),
-            el('button', { className: 'destroy' })
+            el('button', { "className": 'destroy' })
         ),
-        el('div', { className: 'input-container' },
+        el('div', { "className": 'input-container' },
             el('input', {
                 id: 'edit-todo-input',
                 type: 'text',
-                className: 'edit'
+                "className": 'edit'
             }),
             el('label', {
-                className: 'visually-hidden',
+                "className": 'visually-hidden',
                 for: 'edit-todo-input'
             }, 'Edit Todo Input')
         )

@@ -30,33 +30,33 @@ export function newTask(inititalContent) {
     }
 
     return el('li', {
-        className: () => {
+        "className": () => {
             isCompleted ? 'completed' : isEditing ? 'editing' : ''
         },
         'on:mouseenter': () => setIsHovered(true),
         'on:mouseleave': () => setIsHovered(false)
     },
-        el('div', { className: 'view' },
+        el('div', { "className": 'view' },
             el('input', {
                 type: 'checkbox',
-                className: 'toggle',
+                "className": 'toggle',
                 checked: () => isCompleted(),
                 'on:change': () => setIsCompleted(!isCompleted())
             }),
             el('label', { 'on:dblclick': startEditing }, content()),
             el('button', {
-                className: 'destroy',
+                "className": 'destroy',
                 'on:click': handleDelete,
                 style: () => ({
                     opacity: isHovered() ? 1 : 0
                 })
             })
         ),
-        el('div', { className: 'input-container' },
+        el('div', { "className": 'input-container' },
             el('input', {
                 id: 'edit-todo-input',
                 type: 'text',
-                className: 'edit',
+                "className": 'edit',
                 'on:input': (e) => setEditText(e.target.value),
                 'on:blur': cancelEditing,
                 'on:keydown': (e) => {
@@ -64,7 +64,7 @@ export function newTask(inititalContent) {
                 }
             }),
             el('label', {
-                className: 'visually-hidden',
+                "className": 'visually-hidden',
                 htmlFor: 'edit-todo-input',
                 textContent: 'Edit Todo Input'
             })

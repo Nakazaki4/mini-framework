@@ -66,7 +66,7 @@ export function createElement(vnode) {
             if (typeof value === 'function') {
                 const cleanupFn = effect(() => {
                     const actualValue = value()
-                    if (key === 'className') {
+                    if (key === "className") {
                         el.setAttribute(key, actualValue)
                     } else if (key === 'style' && typeof actualValue === 'object') {
                         Object.assign(el.style, actualValue)
@@ -78,7 +78,7 @@ export function createElement(vnode) {
                 return
             }
 
-            if (key === 'className') {
+            if (key === "className") {
                 el[key] = value
             } else if (key === 'style' && typeof value === 'object') {
                 Object.assign(el.style, value)
@@ -95,18 +95,37 @@ export function createElement(vnode) {
         vnode.children?.forEach(child => {
             if (child) {
                 if (typeof child === 'function') {
-                    const elementsByKey = new Map()
+                    const keyToElement = new Map()
+
                     const cleanupFn = effect(() => {
                         const value = child()
-
                         if (!Array.isArray(value)) return
-                        // if ()
 
-                        
-                        value.forEach((obj, idx) => {
-                            elementsByKey.set(idx, obj)
-                            const newEl = createElement(obj)
+                        const currentKeys = new Set()
+
+                        value.forEach((vnode) => {
+                            const key = vnode.key
+
+                            if (key === undefined) {
+                                console.warn('Vnode missing key:', vnode)
+                            }
+
+                            currentKeys.add(key)
+
+                            if (keyToElement.has(key)) return
+
+                            const newEl = createElement(vnode)
                             el.appendChild(newEl)
+                            keyToElement.set(key, newEl)
+                        })
+
+                        // Remove elements whose keys are no longer present
+                        keyToElement.forEach((element, key) => {
+                            if (!currentKeys.has(key)) {
+                                unmount(element)
+                                element.remove()
+                                keyToElement.delete(key)
+                            }
                         })
                     })
 

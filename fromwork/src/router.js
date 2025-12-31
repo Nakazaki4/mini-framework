@@ -17,12 +17,10 @@ class Router {
 
         window.addEventListener('hashchange', () => {
             this.setCurrentRoute(this.getCurrentPath())
-            this.setQueryParams(this.getQueryParams())
         })
 
         window.addEventListener('popstate', () => {
             this.setCurrentRoute(this.getCurrentPath())
-            this.setQueryParams(this.getQueryParams())
         })
     }
 
@@ -35,9 +33,9 @@ class Router {
     getQueryParams() {
         const hash = window.location.hash.slice(1)
         const [, queryString] = hash.split('?')
-        
+
         if (!queryString) return {}
-        
+
         const params = {}
         const searchParams = new URLSearchParams(queryString)
         for (const [key, value] of searchParams) {
@@ -82,7 +80,7 @@ class Router {
         // Build URL with query parameters
         const queryString = this.buildQueryString(query)
         const fullPath = queryString ? `${path}?${queryString}` : path
-        
+
         if (fullPath === window.location.hash.slice(1)) return
         window.location.hash = fullPath
     }
@@ -107,12 +105,12 @@ class Router {
     }
 
     buildQueryString(params) {
-        const filtered = Object.entries(params).filter(([_, value]) => 
+        const filtered = Object.entries(params).filter(([_, value]) =>
             value !== null && value !== undefined && value !== ''
         )
-        
+
         if (filtered.length === 0) return ''
-        
+
         return filtered
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
             .join('&')
@@ -135,7 +133,6 @@ class Router {
 
     // MODIFIED: Check route groups before destroying DOM
     _render() {
-        console.log("hello")
         const path = this.currentRoute()
         const callback = this.routes.get(path)
 
@@ -197,7 +194,7 @@ class Router {
             this.currentDOM = doms
         } else {
             const dom = createElement(result)
-            this.root.appendChild(dom)
+            this.root.appendChildresult(dom)
             this.currentDOM = dom
         }
 
