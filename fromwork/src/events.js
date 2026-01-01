@@ -27,7 +27,6 @@ export function delegate(parent, selector, type, handler) { //type: type of even
     
     const rule = { selector, handler }
     eventsForParent[type].push(rule)
-    console.log(eventsForParent)
 
     return () => {
         const list = eventsForParent[type]

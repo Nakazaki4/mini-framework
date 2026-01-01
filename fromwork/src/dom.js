@@ -22,8 +22,6 @@ export function enableAutoCleanup() {
     observer.observe(document.body, { childList: true, subtree: true })
 }
 
-const elementsByKey = new Map()
-
 export function createElement(vnode) {
     if (typeof vnode === 'string' || typeof vnode === 'number') {
         return document.createTextNode(String(vnode))
@@ -51,22 +49,21 @@ export function createElement(vnode) {
 
     const el = document.createElement(vnode.tag)
     el._cleanups = []
+    el._delayedEvents = []
 
     // attributes
     if (vnode.attrs) {
         Object.entries(vnode.attrs).forEach(([key, value]) => {
             if (key.startsWith('on:')) {
                 const event = key.slice(3)
-                const parentEl = el.parentNode || document.body
-                const cleanupFn = delegate(parentEl, vnode.tag, event, value)
-                el._cleanups.push(cleanupFn)
+                el._delayedEvents.push({ event, handler: value, selector: vnode.tag })
                 return
             }
 
             if (typeof value === 'function') {
                 const cleanupFn = effect(() => {
                     const actualValue = value()
-                    if (key === "className") {
+                    if (key === 'className') {
                         el.setAttribute(key, actualValue)
                     } else if (key === 'style' && typeof actualValue === 'object') {
                         Object.assign(el.style, actualValue)
@@ -78,7 +75,7 @@ export function createElement(vnode) {
                 return
             }
 
-            if (key === "className") {
+            if (key === 'className') {
                 el[key] = value
             } else if (key === 'style' && typeof value === 'object') {
                 Object.assign(el.style, value)
@@ -103,17 +100,15 @@ export function createElement(vnode) {
 
                         const currentKeys = new Set()
 
-                        value.forEach((vnode) => {
-                            const key = vnode.key
-
-                            if (key === undefined) {
+                        value.forEach((vnode, idx) => {
+                            if (vnode.key === undefined) {
                                 console.warn('Vnode missing key:', vnode)
+                                vnode.key = idx
                             }
-
+                            let key = vnode.key
                             currentKeys.add(key)
 
                             if (keyToElement.has(key)) return
-
                             const newEl = createElement(vnode)
                             el.appendChild(newEl)
                             keyToElement.set(key, newEl)
@@ -143,6 +138,14 @@ export function createElement(vnode) {
 function mount(parent, vnode) {
     const domElement = createElement(vnode)
     parent.appendChild(domElement)
+
+    if (domElement._delayedEvents) {
+        domElement._delayedEvents.forEach(({ event, handler, selector }) => {
+            const cleanupFn = delegate(parent, selector, event, handler)
+            domElement._cleanups.push(cleanupFn)
+        })
+        delete domElement._delayedEvents
+    }
 }
 
 function unmount(node) {
