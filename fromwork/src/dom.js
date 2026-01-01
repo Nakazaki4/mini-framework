@@ -64,11 +64,13 @@ export function createElement(vnode) {
                 const cleanupFn = effect(() => {
                     const actualValue = value()
                     if (key === 'className') {
-                        el.setAttribute(key, actualValue)
+                        el.className = actualValue
                     } else if (key === 'style' && typeof actualValue === 'object') {
                         Object.assign(el.style, actualValue)
-                    } else {
+                    } else if (key in el) {
                         el[key] = actualValue
+                    } else {
+                        el.setAttribute(key, actualValue)
                     }
                 })
                 el._cleanups.push(cleanupFn)
