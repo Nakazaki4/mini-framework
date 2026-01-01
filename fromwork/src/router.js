@@ -30,19 +30,6 @@ class Router {
         return path || '/'
     }
 
-    getQueryParams() {
-        const hash = window.location.hash.slice(1)
-        const [, queryString] = hash.split('?')
-
-        if (!queryString) return {}
-
-        const params = {}
-        const searchParams = new URLSearchParams(queryString)
-        for (const [key, value] of searchParams) {
-            params[key] = value
-        }
-        return params
-    }
 
     initRouter(rootElement) {
         if (this.isInit) {
