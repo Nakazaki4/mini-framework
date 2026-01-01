@@ -3,6 +3,9 @@ import { signal } from "../../fromwork/src/reactivity.js"
 import { currentFilter } from '../todo.js'
 import { todos, addTodo, removeTodo } from "../todo.js"
 
+// Map to track individual task completion states by todo id
+const taskCompletionStates = new Map()
+
 export function sectionPart() {
     return el('section', { className: 'todoapp' },
         header(),
@@ -56,12 +59,26 @@ function footer() {
 }
 
 function main() {
+    const [toggleAllState, setToggleAllState] = signal(false)
+
+    const handleToggleAll = () => {
+        const newState = !toggleAllState()
+        setToggleAllState(newState)
+
+        taskCompletionStates.forEach((id, setter) => {
+            console.log(setter);
+            setter(newState)
+        })
+    }
+
     return el('main', { className: 'main' },
         el('div', { className: 'toggle-all-container' },
             el('input', {
                 type: 'checkbox',
                 id: 'toggle-all-input',
-                className: 'toggle-all'
+                className: 'toggle-all',
+                'on:change': handleToggleAll,
+                checked: () => toggleAllState()
             }),
             el('label', {
                 className: 'toggle-all-label',
@@ -99,6 +116,10 @@ function header() {
 
 function task(todo) {
     const [isCompleted, setIsCompleted] = signal(false)
+    const [text, setText] = signal('')
+
+    // Register this task's completion state
+    taskCompletionStates.set(todo.id, setIsCompleted)
 
     const toggleStatus = () => {
         setIsCompleted(!isCompleted())
@@ -106,6 +127,7 @@ function task(todo) {
 
     const deleteTask = () => {
         removeTodo(todo.id)
+        taskCompletionStates.delete(todo.id)
     }
 
     return el('li', {

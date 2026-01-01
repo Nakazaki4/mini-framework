@@ -1,6 +1,7 @@
 import { footerPart, sectionPart } from "./components/app.js"
 import { router } from '../fromwork/src/router.js'
 import { signal } from '../fromwork/src/reactivity.js'
+import { enableAutoCleanup } from '../fromwork/src/dom.js'
 
 export const [currentFilter, setCurrentFilter] = signal('all')
 export const [todos, setTodos] = signal([])
@@ -28,6 +29,8 @@ export function editTodo(id, newText) {
 }
 
 function App() {
+    enableAutoCleanup()
+
     router
         .addRoute('/', () => {
             console.log('Route: All todos')
