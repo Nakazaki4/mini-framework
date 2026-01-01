@@ -120,60 +120,6 @@ function header() {
     )
 }
 
-// function task(todo) {
-//     const [isCompleted, setIsCompleted] = signal(false)
-//     const [text, setText] = signal('')
-
-//     // Register this task's completion state
-//     taskCompletionStates.set(todo.id, setIsCompleted)
-
-//     const toggleStatus = () => {
-//         toggleTodo(todo.id)
-//     }
-
-//     const deleteTask = () => {
-//         removeTodo(todo.id)
-//         taskCompletionStates.delete(todo.id)
-//     }
-
-//     return el('li', {
-//         className: () => todo.completed() ? 'completed' : ''
-//     },
-//         el('div', { className: 'view' },
-//             el('input', {
-//                 type: 'checkbox',
-//                 className: 'toggle',
-//                 'on:change': toggleStatus,
-//                 checked: () => todo.completed()
-//             }),
-//             el('label', {}, todo.title),
-//             el('button', {
-//                 className: 'destroy',
-//                 'on:click': deleteTask
-//             })
-//         ),
-//         el('div', { className: 'input-container' },
-//             el('input', {
-//                 id: 'edit-todo-input',
-//                 type: 'text',
-//                 className: 'edit'
-//             }),
-//             el('label', {
-//                 className: 'visually-hidden',
-//                 for: 'edit-todo-input'
-//             }, 'Edit Todo Input')
-//         )
-//     )
-// }
-
-
-
-
-
-
-
-
-
 
 function task(todo) {
     const [isEditing, setIsEditing] = signal(false)
