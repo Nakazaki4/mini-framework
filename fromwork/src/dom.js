@@ -87,47 +87,68 @@ export function createElement(vnode) {
         })
     }
 
-    // children
+
+    // Children
     if (Array.isArray(vnode.children)) {
-        vnode.children?.forEach(child => {
-            if (child) {
-                if (typeof child === 'function') {
-                    const keyToElement = new Map()
+        vnode.children.forEach(child => {
+            if (!child) return
 
-                    const cleanupFn = effect(() => {
-                        const value = child()
-                        if (!Array.isArray(value)) return
+            if (typeof child === 'function') {
+                const keyToElement = new Map()
 
-                        const currentKeys = new Set()
+                const cleanupFn = effect(() => {
+                    const value = child()
+                    if (!Array.isArray(value)) return
 
-                        value.forEach((vnode, idx) => {
-                            if (vnode.key === undefined) {
-                                console.warn('Vnode missing key:', vnode)
-                                vnode.key = idx
+                    const currentKeys = new Set()
+
+                    value.forEach((vnode, index) => {
+                        const key = vnode.key
+
+                        if (key === undefined) {
+                            console.warn('Vnode in list missing key:', vnode)
+                            return
+                        }
+
+                        const finalKey = vnode.key
+                        currentKeys.add(finalKey)
+
+                        if (keyToElement.has(finalKey)) {
+                            const existingElement = keyToElement.get(finalKey)
+
+                            const currentPosition = Array.from(el.children).indexOf(existingElement) // gets the old position
+                            if (currentPosition !== index) {
+                                if (index >= el.children.length) {
+                                    el.appendChild(existingElement)
+                                } else {
+                                    el.insertBefore(existingElement, el.children[index])
+                                }
                             }
-                            let key = vnode.key
-                            currentKeys.add(key)
+                            return
+                        }
 
-                            if (keyToElement.has(key)) return
-                            const newEl = createElement(vnode)
-                            el.appendChild(newEl)
-                            keyToElement.set(key, newEl)
-                        })
+                        const element = createElement(vnode)
+                        keyToElement.set(finalKey, element)
 
-                        // Remove elements whose keys are no longer present
-                        keyToElement.forEach((element, key) => {
-                            if (!currentKeys.has(key)) {
-                                unmount(element)
-                                element.remove()
-                                keyToElement.delete(key)
-                            }
-                        })
+                        if (index >= el.children.length) {
+                            el.appendChild(element)
+                        } else {
+                            el.insertBefore(element, el.children[index])
+                        }
                     })
 
-                    el._cleanups.push(cleanupFn)
-                } else {
-                    mount(el, child)
-                }
+                    keyToElement.forEach((element, key) => {
+                        if (!currentKeys.has(key)) {
+                            unmount(element)
+                            element.remove()
+                            keyToElement.delete(key)
+                        }
+                    })
+                })
+
+                el._cleanups.push(cleanupFn)
+            } else {
+                mount(el, child)
             }
         })
     }
