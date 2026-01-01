@@ -104,22 +104,31 @@ export function createElement(vnode) {
                     }
 
                     const currentKeys = new Set()
+                    value.forEach(vnode => {
+                        if (vnode.key !== undefined) currentKeys.add(vnode.key)
+                    })
 
+                    // 1. Remove elements that are no longer in the list
+                    keyToElement.forEach((element, key) => {
+                        if (!currentKeys.has(key)) {
+                            unmount(element)
+                            element.remove()
+                            keyToElement.delete(key)
+                        }
+                    })
+
+                    // 2. Reconcile remaining and new elements
                     value.forEach((vnode, index) => {
-                        const key = vnode.key
-
-                        if (key === undefined) {
+                        const finalKey = vnode.key
+                        if (finalKey === undefined) {
                             console.warn('Vnode in list missing key:', vnode)
                             return
                         }
 
-                        const finalKey = vnode.key
-                        currentKeys.add(finalKey)
-
                         if (keyToElement.has(finalKey)) {
                             const existingElement = keyToElement.get(finalKey)
+                            const currentPosition = Array.from(el.children).indexOf(existingElement)
 
-                            const currentPosition = Array.from(el.children).indexOf(existingElement) // gets the old position
                             if (currentPosition !== index) {
                                 if (index >= el.children.length) {
                                     el.appendChild(existingElement)
@@ -127,24 +136,14 @@ export function createElement(vnode) {
                                     el.insertBefore(existingElement, el.children[index])
                                 }
                             }
-                            return
-                        }
-
-                        const element = createElement(vnode)
-                        keyToElement.set(finalKey, element)
-
-                        if (index >= el.children.length) {
-                            el.appendChild(element)
                         } else {
-                            el.insertBefore(element, el.children[index])
-                        }
-                    })
-
-                    keyToElement.forEach((element, key) => {
-                        if (!currentKeys.has(key)) {
-                            unmount(element)
-                            element.remove()
-                            keyToElement.delete(key)
+                            const element = createElement(vnode)
+                            keyToElement.set(finalKey, element)
+                            if (index >= el.children.length) {
+                                el.appendChild(element)
+                            } else {
+                                el.insertBefore(element, el.children[index])
+                            }
                         }
                     })
                 })
