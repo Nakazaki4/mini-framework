@@ -123,6 +123,8 @@ export function createElement(vnode) {
                             if (currentPosition !== index) {
                                 if (index >= el.children.length) {
                                     el.appendChild(existingElement)
+                                } else {
+                                    el.insertBefore(existingElement, el.children[index])
                                 }
                             }
                             return
