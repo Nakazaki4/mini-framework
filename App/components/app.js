@@ -22,23 +22,23 @@ export function footerPart() {
     )
 }
 
-function footer() {
-    const activeCount = () => {
-        let count = 0
-        todos().forEach(todo => {
-            const state = taskCompletionStates.get(todo.id)
-            const isCompleted = state ? state.completed() : false
-            if (!isCompleted) count++
-        })
-        return `${count} item${count !== 1 ? 's' : ''} left`
-    }
+function getActiveCount() {
+    let count = 0
+    todos().forEach(todo => {
+        const state = taskCompletionStates.get(todo.id)
+        const isCompleted = state ? state.completed() : false
+        if (!isCompleted) count++
+    })
+    return `${count} item${count !== 1 ? 's' : ''} left`
+}
 
+function footer() {
     return el('footer', {
         className: 'footer',
         style: () => todos().length === 0 ? { display: 'none' } : { display: 'block' }
     },
         el('span', { className: 'todo-count' },
-            el('strong', {}, activeCount)
+            el('strong', {}, getActiveCount)
         ),
         el('ul', { className: 'filters' },
             el('li', {}, el('a', {
@@ -166,7 +166,7 @@ function task(todo) {
                 type: 'checkbox',
                 className: 'toggle',
                 'on:change': toggleStatus,
-                checked: () => completed()  // ← Use local signal
+                checked: () => completed()
             }),
             el('label', {}, todo.title),
             el('button', {

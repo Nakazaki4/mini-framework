@@ -31,7 +31,11 @@ export function signal(initialValue) {
 }
 
 export function effect(fn) {
-  const wrapper = () => fn()
+  const wrapper = () => {
+    activeEffect = wrapper
+    fn()
+    activeEffect = null
+  }
   wrapper.deps = new Set()
   activeEffect = wrapper
   fn()

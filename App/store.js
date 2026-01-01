@@ -10,7 +10,6 @@ export function addTodo(title) {
     const newTodo = {
         id: ++todoIdCounter,
         title: title
-        // No completed property!
     }
     setTodos([...todos(), newTodo])
 }
@@ -30,11 +29,11 @@ export function editTodo(id, newTitle) {
 export function getFilteredTodos(taskStates) {
     const filter = currentFilter()
     const list = todos()
-    
+
     return list.filter(todo => {
         const state = taskStates.get(todo.id)
         const isCompleted = state ? state.completed() : false
-        
+
         if (filter === 'active') return !isCompleted
         if (filter === 'completed') return isCompleted
         return true
