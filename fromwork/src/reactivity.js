@@ -122,16 +122,18 @@ window.requestAnimationFrame = function (callback) {
   return originalRAF.call(window, (timestamp) => {
     schedule(() => callback(timestamp), true);
   });
-};
-
-export function autoBatchEvents() {
-  const originalAddEventListener = EventTarget.prototype.addEventListener;
+}; 
+ 
+// <<==!-!==>> !(-)! \\ 
+export function autoBatchEvents() { 
+  // <<=>> !!
+  const originalAddEventListener = EventTarget.prototype.addEventListener; 
 
   EventTarget.prototype.addEventListener = function (type, listener, options) {
     const wrappedListener = function (event) {
       schedule(() => listener.call(this, event));
     };
-
     return originalAddEventListener.call(this, type, wrappedListener, options);
   };
+
 }

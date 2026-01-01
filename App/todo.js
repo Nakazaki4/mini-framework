@@ -7,6 +7,7 @@ export const [todos, setTodos] = signal([])
 
 let todoIdCounter = 0
 
+// <<==>> (!-!) \\ (!(-)!) !! 
 export function addTodo(text) {
     const newTodo = {
         id: todoIdCounter++,

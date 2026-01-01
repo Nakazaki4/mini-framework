@@ -6,17 +6,14 @@ class Router {
         this.root = null
         this.routes = new Map()
         this.routeGroups = new Map()
-
         const [currentPath, setCurrentPath] = signal(this.getCurrentPath())
         this.currentRoute = currentPath
         this.setCurrentRoute = setCurrentPath
-
         this.currentDOM = null
         this.lastPath = null
-        this.isInit = false
-
+        this.isInit = false 
         window.addEventListener('hashchange', () => {
-            this.setCurrentRoute(this.getCurrentPath())
+            this.setCurrentRoute(this.getCurrentPath()) //<==>\\ 
         })
     }
 
@@ -26,26 +23,24 @@ class Router {
         return path || '/'
     }
 
-
     initRouter(rootElement) {
         if (this.isInit) {
             console.warn('Router already initialized!')
         }
-
-        this.root = rootElement
+        this.root = rootElement 
+        console.log("That's The howa boom !!") 
+        console.log(this.root) 
+        console.log("==================")
         this.isInit = true
-
-        // Automatically re-render when route state changes
+        // Automatically Re-Render When Route State Changes !! 
         effect(() => {
             this._render()
         })
-
-        return this
+        return this 
     }
 
     addRoute(path, handler, group = null) {
         this.routes.set(path, handler)
-
         // Track route groups
         if (group) {
             if (!this.routeGroups.has(group)) {
@@ -53,55 +48,8 @@ class Router {
             }
             this.routeGroups.get(group).add(path)
         }
-
         return this
-    }
-
-
-    navigate(path, query = {}) {
-        // Build URL with query parameters
-        const queryString = this.buildQueryString(query)
-        const fullPath = queryString ? `${path}?${queryString}` : path
-
-        if (fullPath === window.location.hash.slice(1)) return
-        window.location.hash = fullPath
-    }
-
-
-    setState(newState, merge = true) {
-        const currentQuery = merge ? { ...this.queryParams(), ...newState } : newState
-        const queryString = this.buildQueryString(currentQuery)
-        const path = this.currentRoute()
-        const fullPath = queryString ? `${path}?${queryString}` : path
-        window.location.hash = fullPath
-    }
-
-
-    getState() {
-        return this.queryParams()
-    }
-
-
-    getStateValue(key, defaultValue = null) {
-        return this.queryParams()[key] ?? defaultValue
-    }
-
-    buildQueryString(params) {
-        const filtered = Object.entries(params).filter(([_, value]) =>
-            value !== null && value !== undefined && value !== ''
-        )
-
-        if (filtered.length === 0) return ''
-
-        return filtered
-            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-            .join('&')
-    }
-
-
-    isActive(path) {
-        return this.currentRoute() === path
-    }
+    }  
 
     _getRouteGroup(path) {
         for (const [group, paths] of this.routeGroups) {
@@ -112,11 +60,15 @@ class Router {
         return null
     }
 
-    // MODIFIED: Check route groups before destroying DOM
+    // MODIFIED: Check Route Groups Before Destroying Dom !!
     _render() {
-        const path = this.currentRoute()
+        // <<==>> !-!
+        const path = this.currentRoute() 
+        console.log("howa hiya")
+        console.log(path) 
         const callback = this.routes.get(path)
-
+        console.log("render call") 
+        console.log(callback)
         if (this.lastPath === path) {
             return
         }
@@ -139,8 +91,7 @@ class Router {
         }
 
         // Clean up previous DOM (only if different group or first render)
-        if (this.currentDOM) {
-            console.log(this.currentDOM);
+        if (this.currentDOM) { 
             if (Array.isArray(this.currentDOM)) {
 
                 this.currentDOM.forEach(dom => dom.remove())

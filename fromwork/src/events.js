@@ -1,6 +1,6 @@
 const delegations = new WeakMap();
 
-export function delegate(parent, selector, type, handler) { //type: type of event
+export function delegate(parent, selector, type, handler) {
     let eventsForParent = delegations.get(parent)
     
     if (!eventsForParent) {

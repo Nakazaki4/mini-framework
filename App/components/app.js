@@ -97,7 +97,8 @@ function header() {
     )
 }
 
-function task(todo) {
+function task(todo) { 
+    
     const [isCompleted, setIsCompleted] = signal(false)
 
     const toggleStatus = () => {
