@@ -98,7 +98,10 @@ export function createElement(vnode) {
 
                 const cleanupFn = effect(() => {
                     const value = child()
-                    if (!Array.isArray(value)) return
+                    if (!Array.isArray(value)) {
+                        el.textContent = value == null ? '' : String(value)
+                        return
+                    }
 
                     const currentKeys = new Set()
 

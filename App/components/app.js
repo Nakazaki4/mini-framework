@@ -1,7 +1,6 @@
 import { el } from "../../fromwork/src/dom.js"
 import { signal } from "../../fromwork/src/reactivity.js"
-import { currentFilter } from '../todo.js'
-import { todos, addTodo, removeTodo } from "../todo.js"
+import { currentFilter, todos, addTodo, removeTodo, toggleTodo, getFilteredTodos } from '../store.js'
 
 // Map to track individual task completion states by todo id
 const taskCompletionStates = new Map()
@@ -24,10 +23,17 @@ export function footerPart() {
 }
 
 function footer() {
-    return el('footer', { className: 'footer' },
+    const activeCount = () => {
+        const count = todos().filter(todo => !todo.completed()).length
+        return `${count} item${count !== 1 ? 's' : ''} left`
+    }
+
+    return el('footer', {
+        className: 'footer',
+        style: () => todos().length === 0 ? { display: 'none' } : { display: 'block' }
+    },
         el('span', { className: 'todo-count' },
-            el('strong', {}, ''),
-            " items left "
+            el('strong', {}, activeCount)
         ),
         el('ul', { className: 'filters' },
             el('li', {}, el('a', {
@@ -86,7 +92,7 @@ function main() {
             })
         ),
         el('ul', { className: 'todo-list' },
-            () => todos().map((todo) => {
+            () => getFilteredTodos().map(todo => {
                 const vnode = task(todo)
                 vnode.key = todo.id
                 return vnode
@@ -122,7 +128,7 @@ function task(todo) {
     taskCompletionStates.set(todo.id, setIsCompleted)
 
     const toggleStatus = () => {
-        setIsCompleted(!isCompleted())
+        toggleTodo(todo.id)
     }
 
     const deleteTask = () => {
@@ -131,16 +137,16 @@ function task(todo) {
     }
 
     return el('li', {
-        className: () => isCompleted() ? 'completed' : ''
+        className: () => todo.completed() ? 'completed' : ''
     },
         el('div', { className: 'view' },
             el('input', {
                 type: 'checkbox',
                 className: 'toggle',
                 'on:change': toggleStatus,
-                checked: () => isCompleted()
+                checked: () => todo.completed()
             }),
-            el('label', {}, todo.text),
+            el('label', {}, todo.title),
             el('button', {
                 className: 'destroy',
                 'on:click': deleteTask

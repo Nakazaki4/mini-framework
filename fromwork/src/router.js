@@ -1,4 +1,4 @@
-import { signal, effect, computed } from './reactivity.js'
+import { signal, effect } from './reactivity.js'
 import { createElement } from './dom.js'
 
 class Router {
@@ -21,9 +21,7 @@ class Router {
     }
 
     getCurrentPath() {
-        const hash = window.location.hash.slice(1)
-        const [path] = hash.split('?')
-        return path || '/'
+        return window.location.hash.slice(1) || '/'
     }
 
 
@@ -56,6 +54,17 @@ class Router {
         }
 
         return this
+    }
+
+
+    navigate(path) {
+        if (path === window.location.hash.slice(1)) return
+        window.location.hash = path
+    }
+
+
+    isActive(path) {
+        return this.currentRoute() === path
     }
 
     _getRouteGroup(path) {
