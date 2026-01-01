@@ -123,6 +123,11 @@ class Router {
         const path = this.currentRoute()
         const callback = this.routes.get(path)
 
+        // Prevent recursive/duplicate renders (e.g. if callback updates a dependency)
+        if (this.lastPath === path) {
+            return
+        }
+
         // Check if navigating within the same route group
         if (this.currentDOM && this.lastPath && path !== this.lastPath) {
             const lastGroup = this._getRouteGroup(this.lastPath)
@@ -130,9 +135,6 @@ class Router {
 
             // If both routes are in the same group, skip DOM recreation
             if (lastGroup && currentGroup && lastGroup === currentGroup) {
-                console.log(`✓ Navigating within group '${currentGroup}': ${this.lastPath} → ${path}`)
-                console.log('✓ Skipping DOM recreation, executing callback for state update')
-
                 // Execute the callback to update state (like filter signal)
                 if (callback) {
                     callback()
@@ -146,7 +148,6 @@ class Router {
 
         // Clean up previous DOM (only if different group or first render)
         if (this.currentDOM) {
-            console.log('Recreating DOM for path:', path)
             if (Array.isArray(this.currentDOM)) {
                 this.currentDOM.forEach(dom => dom.remove())
             } else {
@@ -169,7 +170,6 @@ class Router {
         }
 
         // Execute route handler and render result
-        console.log('Creating DOM for path:', path)
         const result = callback()
 
         if (Array.isArray(result)) {
@@ -181,7 +181,7 @@ class Router {
             this.currentDOM = doms
         } else {
             const dom = createElement(result)
-            this.root.appendChildresult(dom)
+            this.root.appendChild(dom)
             this.currentDOM = dom
         }
 
