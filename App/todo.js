@@ -9,7 +9,7 @@ let todoIdCounter = 0
 
 export function addTodo(text) {
     const newTodo = {
-        id: ++todoIdCounter,
+        id: todoIdCounter++,
         text: text,
         completed: false
     }
@@ -21,8 +21,8 @@ export function removeTodo(id) {
 }
 
 export function toggleTodo(id) {
-    setTodos(todos().map(todo => 
-        todo.id === id 
+    setTodos(todos().map(todo =>
+        todo.id === id
             ? { ...todo, completed: !todo.completed }
             : todo
     ))
