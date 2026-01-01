@@ -2,7 +2,7 @@ import { signal } from '../fromwork/src/reactivity.js'
 
 // Create shared filter state that persists across route changes
 export const [currentFilter, setCurrentFilter] = signal('all')
-export const [todos, setTodos] = signal([]) // holds an array of todo objects {id, title, completed: signal(bool)}
+export const [todos, setTodos] = signal([]) // holds an array of todo objects {id, title}
 
 let todoIdCounter = 0
 

@@ -1,9 +1,9 @@
 import { el } from "../../fromwork/src/dom.js"
 import { signal } from "../../fromwork/src/reactivity.js"
-import { currentFilter, todos, addTodo, removeTodo, getFilteredTodos } from '../store.js'
+import { currentFilter, todos, addTodo, removeTodo, editTodo, getFilteredTodos } from '../store.js'
 
 // Map to track individual task completion states by todo id
-const taskCompletionStates = new Map()
+const taskCompletionStates = new Map() //GVO
 
 export function sectionPart() {
     return el('section', { className: 'todoapp' },
@@ -22,6 +22,7 @@ export function footerPart() {
     )
 }
 
+
 function getActiveCount() {
     let count = 0
     todos().forEach(todo => {
@@ -33,6 +34,32 @@ function getActiveCount() {
 }
 
 function footer() {
+    const clearCompleted = () => {
+        const completedIds = []
+        todos().forEach(todo => {
+            const state = taskCompletionStates.get(todo.id)
+            const isCompleted = state ? state.completed() : false
+            if (isCompleted) {
+                completedIds.push(todo.id)
+            }
+        })
+
+        completedIds.forEach(id => {
+            removeTodo(id)
+            taskCompletionStates.delete(id)
+        })
+    }
+
+    const hasCompleted = () => {
+        return todos().some(todo => {
+            const state = taskCompletionStates.get(todo.id)
+            if (state.completed()) {
+                console.log('true')
+            }
+            return state ? state.completed() : false
+        })
+    }
+
     return el('footer', {
         className: 'footer',
         style: () => todos().length === 0 ? { display: 'none' } : { display: 'block' }
@@ -64,7 +91,8 @@ function footer() {
         ),
         el('button', {
             className: 'clear-completed',
-            style: 'display: none;'
+            disabled: () => !hasCompleted(),
+            'on:click': clearCompleted
         }, 'Clear completed')
     )
 }
@@ -135,31 +163,91 @@ function header() {
 }
 
 function task(todo) {
+    const [isEditing, setIsEditing] = signal(false)
+    const [editValue, setEditValue] = signal(todo.title)
+
+    // Local signal to store and track the todo's title reactively
+    let title, setTitle
     let completed, setCompleted
 
+    // Reuse existing state if this todo was already rendered, otherwise create new signals
     if (taskCompletionStates.has(todo.id)) {
         const state = taskCompletionStates.get(todo.id)
+        title = state.title
+        setTitle = state.setTitle
         completed = state.completed
         setCompleted = state.setCompleted
     } else {
-        const signalPair = signal(false)
-        completed = signalPair[0]
-        setCompleted = signalPair[1]
-
-        taskCompletionStates.set(todo.id, { completed, setCompleted })
+        [title, setTitle] = signal(todo.title);
+        [completed, setCompleted] = signal(false);
+        taskCompletionStates.set(todo.id, { title, setTitle, completed, setCompleted })
     }
 
     const toggleStatus = () => {
-        setCompleted(!completed())
+        setCompleted(!completed()) // here
     }
-
     const deleteTask = () => {
         removeTodo(todo.id)
         taskCompletionStates.delete(todo.id)
     }
 
+    const startEdit = (e) => {
+        setEditValue(title())
+        setIsEditing(true)
+        setTimeout(() => {
+            const input = e.target.closest('li').querySelector('.input-container .edit')
+            if (input) {
+                input.focus()
+                input.setSelectionRange(input.value.length, input.value.length)
+            }
+        }, 0)
+    }
+
+    const finishEdit = () => {
+        const trimmedValue = editValue().trim()
+        if (trimmedValue.length === 0) {
+            deleteTask()
+        } else {
+            editTodo(todo.id, trimmedValue)
+            setTitle(trimmedValue)
+        }
+        setIsEditing(false)
+    }
+
+    const cancelEdit = () => {
+        setIsEditing(false)
+        setEditValue(title())
+    }
+
+    const handleKeyUp = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            finishEdit()
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            cancelEdit()
+        }
+    }
+
+    /**
+     * Handles when user clicks outside the edit input - cancels the edit
+     */
+    const handleBlur = () => {
+        // Exit edit mode and discard changes
+        // Use setTimeout to ensure blur completes before updating state
+        setTimeout(() => {
+            setIsEditing(false)
+            setEditValue(title())
+        }, 0)
+    }
+
     return el('li', {
-        className: () => completed() ? 'completed' : ''
+        className: () => {
+            const classes = []
+            if (completed()) classes.push('completed')
+            if (isEditing()) classes.push('editing')
+            return classes.join(' ')
+        }
     },
         el('div', { className: 'view' },
             el('input', {
@@ -168,7 +256,9 @@ function task(todo) {
                 'on:change': toggleStatus,
                 checked: () => completed()
             }),
-            el('label', {}, todo.title),
+            el('label', {
+                'on:dblclick': startEdit
+            }, title),
             el('button', {
                 className: 'destroy',
                 'on:click': deleteTask
@@ -176,14 +266,13 @@ function task(todo) {
         ),
         el('div', { className: 'input-container' },
             el('input', {
-                id: 'edit-todo-input',
+                className: 'edit',
                 type: 'text',
-                className: 'edit'
-            }),
-            el('label', {
-                className: 'visually-hidden',
-                for: 'edit-todo-input'
-            }, 'Edit Todo Input')
+                value: () => editValue(),
+                'on:input': (e) => setEditValue(e.target.value),
+                'on:keydown': handleKeyUp,
+                'on:focusout': handleBlur
+            })
         )
     )
 }

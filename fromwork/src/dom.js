@@ -60,11 +60,13 @@ export function createElement(vnode) {
                 return
             }
 
+
             if (typeof value === 'function') {
                 const cleanupFn = effect(() => {
                     const actualValue = value()
                     if (key === 'className') {
-                        el.setAttribute(key, actualValue)
+                        // el.setAttribute(key, actualValue)
+                        el.className = actualValue
                     } else if (key === 'style' && typeof actualValue === 'object') {
                         Object.assign(el.style, actualValue)
                     } else {
@@ -84,6 +86,7 @@ export function createElement(vnode) {
             } else {
                 el.setAttribute(key, value)
             }
+
         })
     }
 
