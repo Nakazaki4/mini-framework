@@ -59,8 +59,9 @@ export function createElement(vnode) {
                 el._delayedEvents.push({ event, handler: value, selector: vnode.tag })
                 return
             }
-
+         
             if (typeof value === 'function') {
+                   console.log("value",value())
                 const cleanupFn = effect(() => {
                     const actualValue = value()
                     if (key === 'className') {

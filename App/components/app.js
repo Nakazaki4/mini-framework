@@ -1,7 +1,7 @@
 import { el } from "../../fromwork/src/dom.js"
 import { signal } from "../../fromwork/src/reactivity.js"
 import { currentFilter } from '../todo.js'
-import { todos, addTodo, removeTodo } from "../todo.js"
+import { todos, addTodo, removeTodo, toggleAllTodos , toggleTodo} from "../todo.js"
 
 export function sectionPart() {
     return el('section', { className: 'todoapp' },
@@ -61,7 +61,8 @@ function main() {
             el('input', {
                 type: 'checkbox',
                 id: 'toggle-all-input',
-                className: 'toggle-all'
+                className: 'toggle-all',
+                'on:change': toggleAllTodos
             }),
             el('label', {
                 className: 'toggle-all-label',
@@ -98,10 +99,11 @@ function header() {
 }
 
 function task(todo) {
-    const [isCompleted, setIsCompleted] = signal(false)
+    // const [isCompleted, setIsCompleted] = signal(false)
 
     const toggleStatus = () => {
-        setIsCompleted(!isCompleted())
+        toggleTodo(todo.id)
+   //     setIsCompleted(!isCompleted())
     }
 
     const deleteTask = () => {
@@ -109,14 +111,16 @@ function task(todo) {
     }
 
     return el('li', {
-        className: () => isCompleted() ? 'completed' : ''
+         className: () => {
+            const t = todos().find(t => t.id === todo.id)
+            return t && t.completed ? 'completed' : ''
+        }
     },
         el('div', { className: 'view' },
             el('input', {
                 type: 'checkbox',
                 className: 'toggle',
                 'on:change': toggleStatus,
-                checked: () => isCompleted()
             }),
             el('label', {}, todo.text),
             el('button', {
