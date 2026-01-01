@@ -1,7 +1,6 @@
 import { el } from "../../fromwork/src/dom.js"
 import { signal } from "../../fromwork/src/reactivity.js"
-import { currentFilter } from '../todo.js'
-import { todos, addTodo, removeTodo } from "../todo.js"
+import { currentFilter, todos, addTodo, removeTodo, toggleTodo, getFilteredTodos } from '../store.js'
 
 export function sectionPart() {
     return el('section', { className: 'todoapp' },
@@ -21,10 +20,17 @@ export function footerPart() {
 }
 
 function footer() {
-    return el('footer', { className: 'footer' },
+    const activeCount = () => {
+        const count = todos().filter(todo => !todo.completed()).length
+        return `${count} item${count !== 1 ? 's' : ''} left`
+    }
+
+    return el('footer', {
+        className: 'footer',
+        style: () => todos().length === 0 ? { display: 'none' } : { display: 'block' }
+    },
         el('span', { className: 'todo-count' },
-            el('strong', {}, ''),
-            " items left "
+            el('strong', {}, activeCount)
         ),
         el('ul', { className: 'filters' },
             el('li', {}, el('a', {
@@ -56,7 +62,10 @@ function footer() {
 }
 
 function main() {
-    return el('main', { className: 'main' },
+    return el('main', {
+        className: 'main',
+        style: () => todos().length === 0 ? { display: 'none' } : { display: 'block' }
+    },
         el('div', { className: 'toggle-all-container' },
             el('input', {
                 type: 'checkbox',
@@ -69,7 +78,7 @@ function main() {
             })
         ),
         el('ul', { className: 'todo-list' },
-            () => todos().map((todo) => {
+            () => getFilteredTodos().map(todo => {
                 const vnode = task(todo)
                 vnode.key = todo.id
                 return vnode
@@ -98,10 +107,8 @@ function header() {
 }
 
 function task(todo) {
-    const [isCompleted, setIsCompleted] = signal(false)
-
     const toggleStatus = () => {
-        setIsCompleted(!isCompleted())
+        toggleTodo(todo.id)
     }
 
     const deleteTask = () => {
@@ -109,16 +116,16 @@ function task(todo) {
     }
 
     return el('li', {
-        className: () => isCompleted() ? 'completed' : ''
+        className: () => todo.completed() ? 'completed' : ''
     },
         el('div', { className: 'view' },
             el('input', {
                 type: 'checkbox',
                 className: 'toggle',
                 'on:change': toggleStatus,
-                checked: () => isCompleted()
+                checked: () => todo.completed()
             }),
-            el('label', {}, todo.text),
+            el('label', {}, todo.title),
             el('button', {
                 className: 'destroy',
                 'on:click': deleteTask

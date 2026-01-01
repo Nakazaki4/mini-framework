@@ -1,31 +1,6 @@
 import { footerPart, sectionPart } from "./components/app.js"
 import { router } from '../fromwork/src/router.js'
-import { signal } from '../fromwork/src/reactivity.js'
-
-export const [currentFilter, setCurrentFilter] = signal('all')
-export const [todos, setTodos] = signal([])
-
-let todoIdCounter = 0
-
-export function addTodo(text) {
-    const newTodo = {
-        id: todoIdCounter++,
-        text: text
-    }
-    setTodos([...todos(), newTodo])
-}
-
-export function removeTodo(id) {
-    setTodos(todos().filter(todo => todo.id !== id))
-}
-
-export function editTodo(id, newText) {
-    setTodos(todos().map(todo =>
-        todo.id === id
-            ? { ...todo, text: newText }
-            : todo
-    ))
-}
+import { setCurrentFilter } from './store.js'
 
 function App() {
     router
