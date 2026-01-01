@@ -7,26 +7,16 @@ export const [todos, setTodos] = signal([]) // holds an array of todo objects {i
 let todoIdCounter = 0
 
 export function addTodo(title) {
-    const [completed, setCompleted] = signal(false)
     const newTodo = {
         id: ++todoIdCounter,
-        title: title,
-        completed,
-        setCompleted
+        title: title
+        // No completed property!
     }
     setTodos([...todos(), newTodo])
 }
 
 export function removeTodo(id) {
     setTodos(todos().filter(todo => todo.id !== id))
-}
-
-export function toggleTodo(id) {
-    const todo = todos().find(t => t.id === id)
-    if (todo) {
-        todo.setCompleted(!todo.completed())
-        setTodos([...todos()]) // Trigger global update for filtering/counting
-    }
 }
 
 export function editTodo(id, newTitle) {
@@ -37,11 +27,14 @@ export function editTodo(id, newTitle) {
     ))
 }
 
-export function getFilteredTodos() {
-    const list = todos()
+export function getFilteredTodos(taskStates) {
     const filter = currentFilter()
+    const list = todos()
+    
     return list.filter(todo => {
-        const isCompleted = todo.completed()
+        const state = taskStates.get(todo.id)
+        const isCompleted = state ? state.completed() : false
+        
         if (filter === 'active') return !isCompleted
         if (filter === 'completed') return isCompleted
         return true

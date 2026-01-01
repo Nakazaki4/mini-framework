@@ -1,6 +1,6 @@
 import { el } from "../../fromwork/src/dom.js"
 import { signal } from "../../fromwork/src/reactivity.js"
-import { currentFilter, todos, addTodo, removeTodo, toggleTodo, getFilteredTodos } from '../store.js'
+import { currentFilter, todos, addTodo, removeTodo, getFilteredTodos } from '../store.js'
 
 // Map to track individual task completion states by todo id
 const taskCompletionStates = new Map()
@@ -24,7 +24,12 @@ export function footerPart() {
 
 function footer() {
     const activeCount = () => {
-        const count = todos().filter(todo => !todo.completed()).length
+        let count = 0
+        todos().forEach(todo => {
+            const state = taskCompletionStates.get(todo.id)
+            const isCompleted = state ? state.completed() : false
+            if (!isCompleted) count++
+        })
         return `${count} item${count !== 1 ? 's' : ''} left`
     }
 
@@ -65,15 +70,17 @@ function footer() {
 }
 
 function main() {
-    const [toggleAllState, setToggleAllState] = signal(false)
-
     const handleToggleAll = () => {
-        const newState = !toggleAllState()
-        setToggleAllState(newState)
+        const list = todos()
+        const allCompleted = list.length > 0 && list.every(todo => {
+            const state = taskCompletionStates.get(todo.id)
+            return state ? state.completed() : false
+        })
 
-        taskCompletionStates.forEach((id, setter) => {
-            console.log(setter);
-            setter(newState)
+        const newState = !allCompleted
+
+        taskCompletionStates.forEach(({ setCompleted }) => {
+            setCompleted(newState)
         })
     }
 
@@ -84,7 +91,14 @@ function main() {
                 id: 'toggle-all-input',
                 className: 'toggle-all',
                 'on:change': handleToggleAll,
-                checked: () => toggleAllState()
+                checked: () => {
+                    const list = todos()
+                    if (list.length === 0) return false
+                    return list.every(todo => {
+                        const state = taskCompletionStates.get(todo.id)
+                        return state ? state.completed() : false
+                    })
+                }
             }),
             el('label', {
                 className: 'toggle-all-label',
@@ -92,7 +106,7 @@ function main() {
             })
         ),
         el('ul', { className: 'todo-list' },
-            () => getFilteredTodos().map(todo => {
+            () => getFilteredTodos(taskCompletionStates).map(todo => {
                 const vnode = task(todo)
                 vnode.key = todo.id
                 return vnode
@@ -121,14 +135,22 @@ function header() {
 }
 
 function task(todo) {
-    const [isCompleted, setIsCompleted] = signal(false)
-    const [text, setText] = signal('')
+    let completed, setCompleted
 
-    // Register this task's completion state
-    taskCompletionStates.set(todo.id, setIsCompleted)
+    if (taskCompletionStates.has(todo.id)) {
+        const state = taskCompletionStates.get(todo.id)
+        completed = state.completed
+        setCompleted = state.setCompleted
+    } else {
+        const signalPair = signal(false)
+        completed = signalPair[0]
+        setCompleted = signalPair[1]
+
+        taskCompletionStates.set(todo.id, { completed, setCompleted })
+    }
 
     const toggleStatus = () => {
-        toggleTodo(todo.id)
+        setCompleted(!completed())
     }
 
     const deleteTask = () => {
@@ -137,14 +159,14 @@ function task(todo) {
     }
 
     return el('li', {
-        className: () => todo.completed() ? 'completed' : ''
+        className: () => completed() ? 'completed' : ''
     },
         el('div', { className: 'view' },
             el('input', {
                 type: 'checkbox',
                 className: 'toggle',
                 'on:change': toggleStatus,
-                checked: () => todo.completed()
+                checked: () => completed()  // ← Use local signal
             }),
             el('label', {}, todo.title),
             el('button', {
