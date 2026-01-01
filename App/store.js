@@ -37,6 +37,10 @@ export function editTodo(id, newTitle) {
     ))
 }
 
+export function clearCompleted() {
+    setTodos(todos().filter(todo => !todo.completed()))
+}
+
 export function getFilteredTodos() {
     const list = todos()
     const filter = currentFilter()

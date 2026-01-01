@@ -1,6 +1,6 @@
 import { el } from "../../fromwork/src/dom.js"
 import { signal } from "../../fromwork/src/reactivity.js"
-import { currentFilter, todos, addTodo, removeTodo, toggleTodo, getFilteredTodos } from '../store.js'
+import { currentFilter, todos, addTodo, removeTodo, toggleTodo, getFilteredTodos, clearCompleted } from '../store.js'
 
 // Map to track individual task completion states by todo id
 const taskCompletionStates = new Map()
@@ -59,7 +59,8 @@ function footer() {
         ),
         el('button', {
             className: 'clear-completed',
-            style: 'display: none;'
+            style: () => todos().some(todo => todo.completed()) ? { display: 'block' } : { display: 'none' },
+            'on:click': clearCompleted
         }, 'Clear completed')
     )
 }
