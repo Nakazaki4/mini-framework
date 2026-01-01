@@ -98,7 +98,7 @@ function header() {
 }
 
 function task(todo) {
-    const [isCompleted, setIsCompleted] = signal(todo.completed)
+    const [isCompleted, setIsCompleted] = signal(false)
 
     const toggleStatus = () => {
         setIsCompleted(!isCompleted())
@@ -116,7 +116,7 @@ function task(todo) {
                 type: 'checkbox',
                 className: 'toggle',
                 'on:change': toggleStatus,
-                checked: todo.completed
+                checked: () => isCompleted()
             }),
             el('label', {}, todo.text),
             el('button', {

@@ -5,21 +5,17 @@ class Router {
     constructor() {
         this.root = null
         this.routes = new Map()
-        this.routeGroups = new Map() // NEW: Track route groups
+        this.routeGroups = new Map()
 
         const [currentPath, setCurrentPath] = signal(this.getCurrentPath())
         this.currentRoute = currentPath
         this.setCurrentRoute = setCurrentPath
 
         this.currentDOM = null
-        this.lastPath = null // NEW: Track last rendered path
+        this.lastPath = null
         this.isInit = false
 
         window.addEventListener('hashchange', () => {
-            this.setCurrentRoute(this.getCurrentPath())
-        })
-
-        window.addEventListener('popstate', () => {
             this.setCurrentRoute(this.getCurrentPath())
         })
     }
@@ -34,7 +30,6 @@ class Router {
     initRouter(rootElement) {
         if (this.isInit) {
             console.warn('Router already initialized!')
-            return this
         }
 
         this.root = rootElement
@@ -108,7 +103,6 @@ class Router {
         return this.currentRoute() === path
     }
 
-    // NEW: Helper to find which group a path belongs to
     _getRouteGroup(path) {
         for (const [group, paths] of this.routeGroups) {
             if (paths.has(path)) {
@@ -123,7 +117,6 @@ class Router {
         const path = this.currentRoute()
         const callback = this.routes.get(path)
 
-        // Prevent recursive/duplicate renders (e.g. if callback updates a dependency)
         if (this.lastPath === path) {
             return
         }
@@ -135,7 +128,6 @@ class Router {
 
             // If both routes are in the same group, skip DOM recreation
             if (lastGroup && currentGroup && lastGroup === currentGroup) {
-                // Execute the callback to update state (like filter signal)
                 if (callback) {
                     callback()
                 }
@@ -148,7 +140,9 @@ class Router {
 
         // Clean up previous DOM (only if different group or first render)
         if (this.currentDOM) {
+            console.log(this.currentDOM);
             if (Array.isArray(this.currentDOM)) {
+
                 this.currentDOM.forEach(dom => dom.remove())
             } else {
                 this.currentDOM.remove()
