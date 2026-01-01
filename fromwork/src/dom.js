@@ -94,7 +94,52 @@ export function createElement(vnode) {
             if (!child) return
 
             if (typeof child === 'function') {
-                handleReactiveChild(el, child)
+                const keyToElement = new Map()
+
+                const cleanupFn = effect(() => {
+                    const value = child()
+                    if (!Array.isArray(value)) {
+                        el.textContent = value == null ? '' : String(value)
+                        return
+                    }
+
+                    const currentKeys = new Set()
+
+                    value.forEach((vnode, index) => {
+                        const finalKey = vnode.key
+
+                        if (finalKey === undefined) {
+                            console.warn('Vnode in list missing key:', vnode)
+                            return
+                        }
+
+                        currentKeys.add(finalKey)
+
+                        if (keyToElement.has(finalKey)) {
+                            const existingElement = keyToElement.get(finalKey)
+                            const currentPosition = Array.from(el.children).indexOf(existingElement)
+
+                            if (currentPosition !== index) {
+                                el.insertBefore(existingElement, el.children[index])
+                            }
+                            return
+                        }
+
+                        const element = createElement(vnode)
+                        keyToElement.set(finalKey, element)
+                        el.insertBefore(element, el.children[index])
+                    })
+
+                    keyToElement.forEach((element, key) => {
+                        if (!currentKeys.has(key)) {
+                            unmount(element)
+                            element.remove()
+                            keyToElement.delete(key)
+                        }
+                    })
+                })
+
+                el._cleanups.push(cleanupFn)
             } else {
                 mount(el, child)
             }
@@ -103,67 +148,6 @@ export function createElement(vnode) {
 
     return el
 }
-
-function handleReactiveChild(parent, child) {
-    const keyToElement = new Map()
-    let singleNode = null
-    const marker = document.createComment('reactive-child')
-    parent.appendChild(marker)
-
-    const cleanupFn = effect(() => {
-        const value = child()
-
-        if (!Array.isArray(value)) {
-            const text = value == null ? '' : String(value)
-            if (keyToElement.size > 0) {
-                keyToElement.forEach(e => { unmount(e); e.remove() })
-                keyToElement.clear()
-            }
-            if (!singleNode) {
-                singleNode = document.createTextNode(text)
-                parent.insertBefore(singleNode, marker)
-            } else {
-                singleNode.textContent = text
-            }
-            return
-        }
-
-        if (singleNode) {
-            singleNode.remove()
-            singleNode = null
-        }
-
-        const currentKeys = new Set()
-        value.forEach((vnode, index) => {
-            const finalKey = vnode.key
-            if (finalKey === undefined) return
-            currentKeys.add(finalKey)
-
-            if (keyToElement.has(finalKey)) {
-                const existing = keyToElement.get(finalKey)
-                if (Array.from(parent.children).indexOf(existing) !== index) {
-                    parent.insertBefore(existing, parent.children[index] || marker)
-                }
-                return
-            }
-
-            const element = createElement(vnode)
-            keyToElement.set(finalKey, element)
-            parent.insertBefore(element, parent.children[index] || marker)
-        })
-
-        keyToElement.forEach((element, key) => {
-            if (!currentKeys.has(key)) {
-                unmount(element)
-                element.remove()
-                keyToElement.delete(key)
-            }
-        })
-    })
-
-    parent._cleanups.push(cleanupFn)
-}
-
 
 function mount(parent, vnode) {
     const domElement = createElement(vnode)
