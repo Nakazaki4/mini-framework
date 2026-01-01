@@ -1,6 +1,6 @@
 import { el } from "../../fromwork/src/dom.js"
 import { signal } from "../../fromwork/src/reactivity.js"
-import { currentFilter, todos, addTodo, removeTodo, toggleTodo, getFilteredTodos } from '../store.js'
+import { currentFilter, todos, addTodo, removeTodo, toggleTodo, getFilteredTodos, editTodo } from '../store.js'
 
 // Map to track individual task completion states by todo id
 const taskCompletionStates = new Map()
@@ -120,12 +120,66 @@ function header() {
     )
 }
 
-function task(todo) {
-    const [isCompleted, setIsCompleted] = signal(false)
-    const [text, setText] = signal('')
+// function task(todo) {
+//     const [isCompleted, setIsCompleted] = signal(false)
+//     const [text, setText] = signal('')
 
-    // Register this task's completion state
-    taskCompletionStates.set(todo.id, setIsCompleted)
+//     // Register this task's completion state
+//     taskCompletionStates.set(todo.id, setIsCompleted)
+
+//     const toggleStatus = () => {
+//         toggleTodo(todo.id)
+//     }
+
+//     const deleteTask = () => {
+//         removeTodo(todo.id)
+//         taskCompletionStates.delete(todo.id)
+//     }
+
+//     return el('li', {
+//         className: () => todo.completed() ? 'completed' : ''
+//     },
+//         el('div', { className: 'view' },
+//             el('input', {
+//                 type: 'checkbox',
+//                 className: 'toggle',
+//                 'on:change': toggleStatus,
+//                 checked: () => todo.completed()
+//             }),
+//             el('label', {}, todo.title),
+//             el('button', {
+//                 className: 'destroy',
+//                 'on:click': deleteTask
+//             })
+//         ),
+//         el('div', { className: 'input-container' },
+//             el('input', {
+//                 id: 'edit-todo-input',
+//                 type: 'text',
+//                 className: 'edit'
+//             }),
+//             el('label', {
+//                 className: 'visually-hidden',
+//                 for: 'edit-todo-input'
+//             }, 'Edit Todo Input')
+//         )
+//     )
+// }
+
+
+
+
+
+
+
+
+
+
+function task(todo) {
+    const [isEditing, setIsEditing] = signal(false)
+    const [editValue, setEditValue] = signal(todo.title())  // Call signal to get value
+
+    taskCompletionStates.set(todo.id, isEditing)
 
     const toggleStatus = () => {
         toggleTodo(todo.id)
@@ -136,8 +190,47 @@ function task(todo) {
         taskCompletionStates.delete(todo.id)
     }
 
+    const startEdit = () => {
+        setEditValue(todo.title())  // Call signal to get current value
+        setIsEditing(true)
+    }
+
+    const finishEdit = () => {
+        const trimmedValue = editValue().trim()
+        if (trimmedValue.length === 0) {
+            deleteTask()
+        } else {
+            editTodo(todo.id, trimmedValue)
+        }
+        setIsEditing(false)
+    }
+
+    const cancelEdit = () => {
+        setIsEditing(false)
+        setEditValue(todo.title())  // Call signal to get current value
+    }
+
+    const handleKeyUp = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            finishEdit()
+        } else if (e.key === 'Escape') {
+            e.preventDefault()
+            cancelEdit()
+        }
+    }
+
+    const handleBlur = () => {
+        cancelEdit()
+    }
+
     return el('li', {
-        className: () => todo.completed() ? 'completed' : ''
+        className: () => {
+            const classes = []
+            if (todo.completed()) classes.push('completed')
+            if (isEditing()) classes.push('editing')
+            return classes.join(' ')
+        }
     },
         el('div', { className: 'view' },
             el('input', {
@@ -146,7 +239,9 @@ function task(todo) {
                 'on:change': toggleStatus,
                 checked: () => todo.completed()
             }),
-            el('label', {}, todo.title),
+            el('label', {
+                'on:dblclick': startEdit
+            }, () => todo.title()),  // Call signal to get reactive value
             el('button', {
                 className: 'destroy',
                 'on:click': deleteTask
@@ -156,7 +251,11 @@ function task(todo) {
             el('input', {
                 id: 'edit-todo-input',
                 type: 'text',
-                className: 'edit'
+                className: 'edit',
+                value: () => editValue(),
+                'on:input': (e) => setEditValue(e.target.value),
+                'on:keyup': handleKeyUp,
+                'on:blur': handleBlur
             }),
             el('label', {
                 className: 'visually-hidden',

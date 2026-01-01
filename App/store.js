@@ -1,19 +1,22 @@
 import { signal } from '../fromwork/src/reactivity.js'
 
-// Create shared filter state that persists across route changes
 export const [currentFilter, setCurrentFilter] = signal('all')
-export const [todos, setTodos] = signal([]) // holds an array of todo objects {id, title, completed: signal(bool)}
+export const [todos, setTodos] = signal([])
 
 let todoIdCounter = 0
 
-export function addTodo(title) {
+export function addTodo(titleText) {
     const [completed, setCompleted] = signal(false)
+    const [title, setTitle] = signal(titleText)  
+    
     const newTodo = {
         id: ++todoIdCounter,
-        title: title,
+        title,          
+        setTitle,        
         completed,
         setCompleted
     }
+    
     setTodos([...todos(), newTodo])
 }
 
@@ -25,16 +28,15 @@ export function toggleTodo(id) {
     const todo = todos().find(t => t.id === id)
     if (todo) {
         todo.setCompleted(!todo.completed())
-        setTodos([...todos()]) // Trigger global update for filtering/counting
+        setTodos([...todos()]) 
     }
 }
 
 export function editTodo(id, newTitle) {
-    setTodos(todos().map(todo =>
-        todo.id === id
-            ? { ...todo, title: newTitle }
-            : todo
-    ))
+    const todo = todos().find(t => t.id === id)
+    if (todo) {
+        todo.setTitle(newTitle)  
+    }
 }
 
 export function getFilteredTodos() {
