@@ -53,9 +53,6 @@ function footer() {
     const hasCompleted = () => {
         return todos().some(todo => {
             const state = taskCompletionStates.get(todo.id)
-            if (state.completed()) {
-                console.log('true')
-            }
             return state ? state.completed() : false
         })
     }

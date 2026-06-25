@@ -6,7 +6,6 @@ function App() {
 
     router
         .addRoute('/', () => {
-            console.log('Route: All todos')
             setCurrentFilter('all')
             return [sectionPart(), footerPart()]
         }, 'todo-app')
