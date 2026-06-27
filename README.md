@@ -104,7 +104,3 @@ Full API documentation, with detailed examples and common pitfalls, lives in [`f
 ## The demo app
 
 `App/` is a TodoMVC-style task manager that exercises the whole framework: shared reactive state in `store.js` (the todo list and the active filter), reusable components in `components/`, and the router driving the `all` / `active` / `completed` views. It's the best place to see how the pieces fit together in practice.
-
-## License
-
-No license file is currently provided. Add one (e.g. MIT) if you intend others to reuse the code.
